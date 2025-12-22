@@ -1,1 +1,425 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header Styles */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e1e5eb;
+        }
+        
+        .header-title h1 {
+            font-size: 28px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .header-title p {
+            color: #7f8c8d;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        
+        /* Districts Badge - Top Right Corner */
+        .districts-badge {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 18px 28px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 6px 15px rgba(52, 152, 219, 0.2);
+            min-width: 180px;
+            transition: transform 0.3s ease;
+        }
+        
+        .districts-badge:hover {
+            transform: translateY(-5px);
+        }
+        
+        .districts-count {
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .districts-label {
+            font-size: 16px;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+        
+        /* Main Content */
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        /* Card Styles */
+        .dashboard-card {
+            background-color: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        
+        .sanctioned .card-icon {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+        }
+        
+        .completed .card-icon {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .card-value {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .card-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #f1f1f1;
+        }
+        
+        .percentage {
+            font-size: 18px;
+            font-weight: 600;
+            padding: 6px 15px;
+            border-radius: 20px;
+        }
+        
+        .sanctioned .percentage {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+        }
+        
+        .completed .percentage {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
+        }
+        
+        .card-link {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-link i {
+            margin-left: 8px;
+            transition: transform 0.3s;
+        }
+        
+        .card-link:hover i {
+            transform: translateX(5px);
+        }
+        
+        /* Chart Section */
+        .chart-container {
+            background-color: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+        
+        .chart-title {
+            font-size: 22px;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        
+        .chart-wrapper {
+            height: 300px;
+            position: relative;
+        }
+        
+        /* Footer */
+        .dashboard-footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #e1e5eb;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .dashboard-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .districts-badge {
+                margin-top: 20px;
+                align-self: flex-end;
+            }
+            
+            .dashboard-card {
+                padding: 25px;
+            }
+            
+            .card-value {
+                font-size: 40px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .dashboard-container {
+                padding: 15px;
+            }
+            
+            .dashboard-card {
+                padding: 20px;
+            }
+            
+            .districts-badge {
+                padding: 15px 20px;
+                min-width: 150px;
+            }
+            
+            .districts-count {
+                font-size: 30px;
+            }
+            
+            .card-value {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Dashboard Header -->
+        <header class="dashboard-header">
+            <div class="header-title">
+                <h1>Project Monitoring Dashboard</h1>
+                <p>Overview of sanctioned and completed projects across districts</p>
+            </div>
+            
+            <!-- Districts Badge - Top Right Corner -->
+            <div class="districts-badge">
+                <div class="districts-count" id="districtsCount">24</div>
+                <div class="districts-label">Districts</div>
+            </div>
+        </header>
+        
+        <!-- Main Dashboard Content -->
+        <main class="dashboard-content">
+            <!-- Total Sanctioned Card -->
+            <div class="dashboard-card sanctioned">
+                <div class="card-icon">
+                    <i class="fas fa-file-contract"></i>
+                </div>
+                <h3 class="card-title">Total Sanctioned</h3>
+                <div class="card-value" id="sanctionedValue">1,847</div>
+                <div class="card-details">
+                    <div class="percentage">+12.5%</div>
+                    <a href="#" class="card-link">View Details <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+            
+            <!-- Total Completed Card -->
+            <div class="dashboard-card completed">
+                <div class="card-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3 class="card-title">Total Completed</h3>
+                <div class="card-value" id="completedValue">1,392</div>
+                <div class="card-details">
+                    <div class="percentage">+8.3%</div>
+                    <a href="#" class="card-link">View Details <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Chart Section -->
+        <section class="chart-container">
+            <h2 class="chart-title">Progress Overview</h2>
+            <div class="chart-wrapper">
+                <!-- Simple CSS Chart -->
+                <div class="simple-chart">
+                    <div class="chart-bars">
+                        <div class="chart-bar-container">
+                            <div class="chart-bar-label">Sanctioned</div>
+                            <div class="chart-bar-wrapper">
+                                <div class="chart-bar sanctioned-bar" style="width: 100%;"></div>
+                            </div>
+                            <div class="chart-bar-value">1,847</div>
+                        </div>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar-label">Completed</div>
+                            <div class="chart-bar-wrapper">
+                                <div class="chart-bar completed-bar" style="width: 75%;"></div>
+                            </div>
+                            <div class="chart-bar-value">1,392</div>
+                        </div>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar-label">In Progress</div>
+                            <div class="chart-bar-wrapper">
+                                <div class="chart-bar progress-bar" style="width: 25%;"></div>
+                            </div>
+                            <div class="chart-bar-value">455</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Dashboard Footer -->
+        <footer class="dashboard-footer">
+            <p>Dashboard updated: <span id="currentDate"></span> | Data refreshes every 24 hours</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Set current date in footer
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        // Animated counter for dashboard values
+        function animateCounter(elementId, targetValue, duration = 1500) {
+            const element = document.getElementById(elementId);
+            const startValue = 0;
+            const increment = targetValue / (duration / 16); // 60fps
+            
+            let currentValue = startValue;
+            const timer = setInterval(() => {
+                currentValue += increment;
+                if (currentValue >= targetValue) {
+                    element.textContent = formatNumber(targetValue);
+                    clearInterval(timer);
+                } else {
+                    element.textContent = formatNumber(Math.floor(currentValue));
+                }
+            }, 16);
+        }
+        
+        // Format numbers with commas
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+        
+        // Initialize counters when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate the counters
+            animateCounter('sanctionedValue', 1847);
+            animateCounter('completedValue', 1392);
+            
+            // Districts count doesn't need animation in this case
+            document.getElementById('districtsCount').textContent = "24";
+            
+            // Add interactivity to the district badge
+            const districtBadge = document.querySelector('.districts-badge');
+            districtBadge.addEventListener('click', function() {
+                alert('District details: 24 districts are currently active in this program.');
+            });
+            
+            // Update data every 30 seconds (simulation)
+            setInterval(() => {
+                // In a real application, you would fetch new data from an API
+                // Here we just simulate a small change
+                const currentSanctioned = parseInt(document.getElementById('sanctionedValue').textContent.replace(/,/g, ''));
+                const currentCompleted = parseInt(document.getElementById('completedValue').textContent.replace(/,/g, ''));
+                
+                // Add random small increments for simulation
+                const newSanctioned = currentSanctioned + Math.floor(Math.random() * 5);
+                const newCompleted = currentCompleted + Math.floor(Math.random() * 3);
+                
+                // Update with animation
+                animateCounter('sanctionedValue', newSanctioned, 800);
+                animateCounter('completedValue', newCompleted, 800);
+                
+                // Update chart bars
+                const completedBar = document.querySelector('.completed-bar');
+                const progressBar = document.querySelector('.progress-bar');
+                
+                // Calculate new percentages
+                const completionRate = Math.round((newCompleted / newSanctioned) * 100);
+                const progressRate = 100 - completionRate;
+                
+                completedBar.style.width = completionRate + '%';
+                progressBar.style.width = progressRate + '%';
+                
+                // Update bar values
+                document.querySelectorAll('.chart-bar-value')[1].textContent = formatNumber(newCompleted);
+                document.querySelectorAll('.chart-bar-value')[2].textContent = formatNumber(newSanctioned - newCompleted);
+                
+            }, 30000); // Update every 30 seconds
+        });
+    </script>
+</body>
+</html>
