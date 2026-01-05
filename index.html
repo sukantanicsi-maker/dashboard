@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Daily Stock Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -12,413 +11,680 @@
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
-            background-color: #f5f7fa;
-            color: #333;
-            line-height: 1.6;
-        }
-        
-        .dashboard-container {
-            max-width: 1400px;
-            margin: 0 auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
         }
-        
-        /* Header Styles */
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e1e5eb;
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
-        
-        .header-title h1 {
-            font-size: 28px;
-            color: #2c3e50;
-            font-weight: 600;
-        }
-        
-        .header-title p {
-            color: #7f8c8d;
-            font-size: 16px;
-            margin-top: 5px;
-        }
-        
-        /* Districts Badge - Top Right Corner */
-        .districts-badge {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            padding: 18px 28px;
-            border-radius: 12px;
+
+        .header {
             text-align: center;
-            box-shadow: 0 6px 15px rgba(52, 152, 219, 0.2);
-            min-width: 180px;
-            transition: transform 0.3s ease;
+            margin-bottom: 40px;
+            padding: 20px;
         }
-        
-        .districts-badge:hover {
-            transform: translateY(-5px);
+
+        .header h1 {
+            color: white;
+            font-size: 2.8rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
         }
-        
-        .districts-count {
-            font-size: 36px;
-            font-weight: 700;
-            line-height: 1;
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
         }
-        
-        .districts-label {
-            font-size: 16px;
-            margin-top: 5px;
-            opacity: 0.9;
-        }
-        
-        /* Main Content */
-        .dashboard-content {
+
+        .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 25px;
             margin-bottom: 40px;
         }
-        
-        /* Card Styles */
-        .dashboard-card {
-            background-color: white;
-            border-radius: 16px;
+
+        .card {
+            background: white;
+            border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
-        .dashboard-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
         }
-        
-        .card-icon {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
+
+        .card.buy {
+            border-top: 5px solid #4CAF50;
+        }
+
+        .card.sell {
+            border-top: 5px solid #2196F3;
+        }
+
+        .card.expense {
+            border-top: 5px solid #FF9800;
+        }
+
+        .card.net {
+            border-top: 5px solid #9C27B0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-right: 15px;
             font-size: 28px;
         }
-        
-        .sanctioned .card-icon {
-            background-color: rgba(231, 76, 60, 0.1);
-            color: #e74c3c;
+
+        .buy .icon {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
         }
-        
-        .completed .card-icon {
-            background-color: rgba(46, 204, 113, 0.1);
-            color: #2ecc71;
+
+        .sell .icon {
+            background: rgba(33, 150, 243, 0.1);
+            color: #2196F3;
         }
-        
-        .card-title {
-            font-size: 18px;
-            color: #7f8c8d;
+
+        .expense .icon {
+            background: rgba(255, 152, 0, 0.1);
+            color: #FF9800;
+        }
+
+        .net .icon {
+            background: rgba(156, 39, 176, 0.1);
+            color: #9C27B0;
+        }
+
+        .card-title h3 {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .card-title .date {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .amount {
+            font-size: 2.8rem;
+            font-weight: bold;
             margin-bottom: 10px;
-            font-weight: 500;
         }
-        
-        .card-value {
-            font-size: 48px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: #2c3e50;
+
+        .buy .amount {
+            color: #4CAF50;
         }
-        
-        .card-details {
+
+        .sell .amount {
+            color: #2196F3;
+        }
+
+        .expense .amount {
+            color: #FF9800;
+        }
+
+        .net .amount {
+            color: #9C27B0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .loading-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .controls {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #f1f1f1;
+            flex-wrap: wrap;
+            gap: 15px;
         }
-        
-        .percentage {
-            font-size: 18px;
-            font-weight: 600;
-            padding: 6px 15px;
-            border-radius: 20px;
-        }
-        
-        .sanctioned .percentage {
-            background-color: rgba(231, 76, 60, 0.1);
-            color: #e74c3c;
-        }
-        
-        .completed .percentage {
-            background-color: rgba(46, 204, 113, 0.1);
-            color: #2ecc71;
-        }
-        
-        .card-link {
-            color: #3498db;
-            text-decoration: none;
-            font-weight: 500;
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
             display: flex;
             align-items: center;
+            gap: 10px;
+            transition: transform 0.2s;
         }
-        
-        .card-link i {
-            margin-left: 8px;
-            transition: transform 0.3s;
+
+        .refresh-btn:hover {
+            transform: scale(1.05);
         }
-        
-        .card-link:hover i {
-            transform: translateX(5px);
+
+        .refresh-btn:active {
+            transform: scale(0.95);
         }
-        
-        /* Chart Section */
+
+        .date-info {
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: 500;
+        }
+
         .chart-container {
-            background-color: white;
-            border-radius: 16px;
+            background: white;
+            border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
-        
+
         .chart-title {
-            font-size: 22px;
-            color: #2c3e50;
-            margin-bottom: 25px;
-            font-weight: 600;
-        }
-        
-        .chart-wrapper {
-            height: 300px;
-            position: relative;
-        }
-        
-        /* Footer */
-        .dashboard-footer {
             text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #e1e5eb;
-            color: #7f8c8d;
-            font-size: 14px;
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 1.5rem;
         }
-        
-        /* Responsive Design */
-        @media (max-width: 992px) {
-            .dashboard-content {
+
+        footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            font-size: 0.9rem;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #c62828;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
                 grid-template-columns: 1fr;
             }
-        }
-        
-        @media (max-width: 768px) {
-            .dashboard-header {
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .amount {
+                font-size: 2.2rem;
+            }
+            
+            .controls {
                 flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .districts-badge {
-                margin-top: 20px;
-                align-self: flex-end;
-            }
-            
-            .dashboard-card {
-                padding: 25px;
-            }
-            
-            .card-value {
-                font-size: 40px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .dashboard-container {
-                padding: 15px;
-            }
-            
-            .dashboard-card {
-                padding: 20px;
-            }
-            
-            .districts-badge {
-                padding: 15px 20px;
-                min-width: 150px;
-            }
-            
-            .districts-count {
-                font-size: 30px;
-            }
-            
-            .card-value {
-                font-size: 36px;
+                align-items: stretch;
             }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="dashboard-container">
-        <!-- Dashboard Header -->
-        <header class="dashboard-header">
-            <div class="header-title">
-                <h1>Project Monitoring Dashboard</h1>
-                <p>Overview of sanctioned and completed projects across districts</p>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Daily Stock Dashboard</h1>
+            <p>Real-time tracking of your daily stock transactions and expenses</p>
+        </div>
+
+        <div class="controls">
+            <div>
+                <button class="refresh-btn" onclick="loadData()">
+                    🔄 Refresh Data
+                </button>
             </div>
-            
-            <!-- Districts Badge - Top Right Corner -->
-            <div class="districts-badge">
-                <div class="districts-count" id="districtsCount">24</div>
-                <div class="districts-label">Districts</div>
+            <div class="date-info" id="lastDate">
+                Loading date...
             </div>
-        </header>
-        
-        <!-- Main Dashboard Content -->
-        <main class="dashboard-content">
-            <!-- Total Sanctioned Card -->
-            <div class="dashboard-card sanctioned">
-                <div class="card-icon">
-                    <i class="fas fa-file-contract"></i>
-                </div>
-                <h3 class="card-title">Total Sanctioned</h3>
-                <div class="card-value" id="sanctionedValue">1,847</div>
-                <div class="card-details">
-                    <div class="percentage">+12.5%</div>
-                    <a href="#" class="card-link">View Details <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-            
-            <!-- Total Completed Card -->
-            <div class="dashboard-card completed">
-                <div class="card-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <h3 class="card-title">Total Completed</h3>
-                <div class="card-value" id="completedValue">1,392</div>
-                <div class="card-details">
-                    <div class="percentage">+8.3%</div>
-                    <a href="#" class="card-link">View Details <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-        </main>
-        
-        <!-- Chart Section -->
-        <section class="chart-container">
-            <h2 class="chart-title">Progress Overview</h2>
-            <div class="chart-wrapper">
-                <!-- Simple CSS Chart -->
-                <div class="simple-chart">
-                    <div class="chart-bars">
-                        <div class="chart-bar-container">
-                            <div class="chart-bar-label">Sanctioned</div>
-                            <div class="chart-bar-wrapper">
-                                <div class="chart-bar sanctioned-bar" style="width: 100%;"></div>
-                            </div>
-                            <div class="chart-bar-value">1,847</div>
-                        </div>
-                        <div class="chart-bar-container">
-                            <div class="chart-bar-label">Completed</div>
-                            <div class="chart-bar-wrapper">
-                                <div class="chart-bar completed-bar" style="width: 75%;"></div>
-                            </div>
-                            <div class="chart-bar-value">1,392</div>
-                        </div>
-                        <div class="chart-bar-container">
-                            <div class="chart-bar-label">In Progress</div>
-                            <div class="chart-bar-wrapper">
-                                <div class="chart-bar progress-bar" style="width: 25%;"></div>
-                            </div>
-                            <div class="chart-bar-value">455</div>
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <p>Loading dashboard data...</p>
+        </div>
+
+        <div id="dashboard" style="display: none;">
+            <div class="dashboard-grid">
+                <div class="card buy">
+                    <div class="card-header">
+                        <div class="icon">💰</div>
+                        <div class="card-title">
+                            <h3>TOTAL BUY</h3>
+                            <div class="date">Last Transaction</div>
                         </div>
                     </div>
+                    <div class="amount" id="totalBuy">₹0.00</div>
+                    <div class="trend">From Buy_Stock Sheet</div>
+                </div>
+
+                <div class="card sell">
+                    <div class="card-header">
+                        <div class="icon">📈</div>
+                        <div class="card-title">
+                            <h3>TOTAL SELL</h3>
+                            <div class="date">Last Transaction</div>
+                        </div>
+                    </div>
+                    <div class="amount" id="totalSell">₹0.00</div>
+                    <div class="trend">From Sell Sheet</div>
+                </div>
+
+                <div class="card expense">
+                    <div class="card-header">
+                        <div class="icon">💸</div>
+                        <div class="card-title">
+                            <h3>DAILY EXPENDITURE</h3>
+                            <div class="date">Last Transaction</div>
+                        </div>
+                    </div>
+                    <div class="amount" id="totalExpense">₹0.00</div>
+                    <div class="trend">From Other_Expenditure Sheet</div>
+                </div>
+
+                <div class="card net">
+                    <div class="card-header">
+                        <div class="icon">⚖️</div>
+                        <div class="card-title">
+                            <h3>NET BALANCE</h3>
+                            <div class="date">Today's Summary</div>
+                        </div>
+                    </div>
+                    <div class="amount" id="netBalance">₹0.00</div>
+                    <div class="trend" id="netStatus">Calculating...</div>
                 </div>
             </div>
-        </section>
-        
-        <!-- Dashboard Footer -->
-        <footer class="dashboard-footer">
-            <p>Dashboard updated: <span id="currentDate"></span> | Data refreshes every 24 hours</p>
-        </footer>
+
+            <div class="chart-container">
+                <h2 class="chart-title">Daily Financial Overview</h2>
+                <canvas id="financeChart"></canvas>
+            </div>
+        </div>
+
+        <div id="errorContainer" style="display: none;" class="error"></div>
     </div>
-    
+
+    <footer>
+        <p>Connected to Google Sheets | Last Updated: <span id="updateTime"></span></p>
+        <p>© 2024 Stock Dashboard | Auto-refresh every 30 seconds</p>
+    </footer>
+
     <script>
-        // Set current date in footer
-        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+        // Your Google Sheet ID from the URL
+        const SHEET_ID = '2PACX-1vQkIpWAUgoPanUyc3qEyn1ZpsGcYHAStO9-MvJtO-0c8KjfdUllKNhktxg70cHpXw';
         
-        // Animated counter for dashboard values
-        function animateCounter(elementId, targetValue, duration = 1500) {
-            const element = document.getElementById(elementId);
-            const startValue = 0;
-            const increment = targetValue / (duration / 16); // 60fps
-            
-            let currentValue = startValue;
-            const timer = setInterval(() => {
-                currentValue += increment;
-                if (currentValue >= targetValue) {
-                    element.textContent = formatNumber(targetValue);
-                    clearInterval(timer);
-                } else {
-                    element.textContent = formatNumber(Math.floor(currentValue));
-                }
-            }, 16);
-        }
+        // Cache for storing data
+        let cache = {
+            buy: null,
+            sell: null,
+            expense: null,
+            timestamp: null
+        };
         
-        // Format numbers with commas
-        function formatNumber(num) {
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
+        // Chart instance
+        let financeChart = null;
         
-        // Initialize counters when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            // Animate the counters
-            animateCounter('sanctionedValue', 1847);
-            animateCounter('completedValue', 1392);
-            
-            // Districts count doesn't need animation in this case
-            document.getElementById('districtsCount').textContent = "24";
-            
-            // Add interactivity to the district badge
-            const districtBadge = document.querySelector('.districts-badge');
-            districtBadge.addEventListener('click', function() {
-                alert('District details: 24 districts are currently active in this program.');
+        // Format currency in Indian Rupees
+        function formatCurrency(amount) {
+            return '₹' + parseFloat(amount || 0).toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
             });
+        }
+        
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-IN', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+        
+        // Parse CSV data
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            const data = [];
             
-            // Update data every 30 seconds (simulation)
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim() === '') continue;
+                
+                const values = lines[i].split(',').map(v => v.trim());
+                const row = {};
+                
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
+                });
+                
+                data.push(row);
+            }
+            
+            return data;
+        }
+        
+        // Find amount column (case insensitive)
+        function findAmountColumn(row) {
+            const amountKeywords = ['amount', 'total', 'value', 'price', 'cost', 'sum'];
+            const columns = Object.keys(row);
+            
+            for (const keyword of amountKeywords) {
+                const found = columns.find(col => 
+                    col.toLowerCase().includes(keyword.toLowerCase())
+                );
+                if (found) return found;
+            }
+            
+            // If no amount column found, return the last numeric column
+            for (const col of columns) {
+                if (col && !isNaN(row[col]) && row[col] !== '') {
+                    return col;
+                }
+            }
+            
+            return columns[columns.length - 1]; // Fallback to last column
+        }
+        
+        // Find date column (case insensitive)
+        function findDateColumn(row) {
+            const dateKeywords = ['date', 'time', 'timestamp'];
+            const columns = Object.keys(row);
+            
+            for (const keyword of dateKeywords) {
+                const found = columns.find(col => 
+                    col.toLowerCase().includes(keyword.toLowerCase())
+                );
+                if (found) return found;
+            }
+            
+            // If no date column found, return the first column
+            return columns[0];
+        }
+        
+        // Get latest date data from sheet
+        async function getLatestData(sheetName) {
+            try {
+                const csvUrl = `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/pub?gid=0&single=true&output=csv&sheet=${encodeURIComponent(sheetName)}`;
+                
+                const response = await fetch(csvUrl);
+                if (!response.ok) throw new Error(`Failed to fetch ${sheetName}`);
+                
+                const csvText = await response.text();
+                const data = parseCSV(csvText);
+                
+                if (data.length === 0) {
+                    return { total: 0, date: null };
+                }
+                
+                // Find date and amount columns
+                const sampleRow = data[0];
+                const dateColumn = findDateColumn(sampleRow);
+                const amountColumn = findAmountColumn(sampleRow);
+                
+                // Sort by date (descending)
+                const sortedData = data.filter(row => row[dateColumn])
+                    .sort((a, b) => {
+                        const dateA = new Date(a[dateColumn]);
+                        const dateB = new Date(b[dateColumn]);
+                        return dateB - dateA;
+                    });
+                
+                if (sortedData.length === 0) {
+                    return { total: 0, date: null };
+                }
+                
+                // Get latest date
+                const latestDate = sortedData[0][dateColumn];
+                
+                // Sum amounts for latest date
+                const latestDateData = sortedData.filter(row => row[dateColumn] === latestDate);
+                const total = latestDateData.reduce((sum, row) => {
+                    const amount = parseFloat(row[amountColumn]) || 0;
+                    return sum + amount;
+                }, 0);
+                
+                return { 
+                    total, 
+                    date: latestDate,
+                    rawData: latestDateData
+                };
+                
+            } catch (error) {
+                console.error(`Error fetching ${sheetName}:`, error);
+                return { total: 0, date: null };
+            }
+        }
+        
+        // Load all data from Google Sheets
+        async function loadData() {
+            try {
+                // Show loading, hide dashboard and error
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('dashboard').style.display = 'none';
+                document.getElementById('errorContainer').style.display = 'none';
+                
+                // Fetch data from all sheets
+                const [buyData, sellData, expenseData] = await Promise.all([
+                    getLatestData('Buy_Stock'),
+                    getLatestData('Sell'),
+                    getLatestData('Other_Expenditure')
+                ]);
+                
+                // Store in cache
+                cache = {
+                    buy: buyData,
+                    sell: sellData,
+                    expense: expenseData,
+                    timestamp: new Date()
+                };
+                
+                // Update UI
+                updateDashboard();
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showError('Failed to load data. Please check your internet connection and try again.');
+            }
+        }
+        
+        // Update dashboard with cached data
+        function updateDashboard() {
+            const { buy, sell, expense, timestamp } = cache;
+            
+            // Determine latest date
+            const dates = [buy.date, sell.date, expense.date].filter(Boolean);
+            const latestDate = dates.length > 0 ? 
+                dates.sort((a, b) => new Date(b) - new Date(a))[0] : 
+                null;
+            
+            // Update date display
+            document.getElementById('lastDate').textContent = 
+                latestDate ? `Last Updated: ${formatDate(latestDate)}` : 'No date available';
+            
+            // Update amounts
+            document.getElementById('totalBuy').textContent = formatCurrency(buy.total);
+            document.getElementById('totalSell').textContent = formatCurrency(sell.total);
+            document.getElementById('totalExpense').textContent = formatCurrency(expense.total);
+            
+            // Calculate and update net balance
+            const netBalance = sell.total - buy.total - expense.total;
+            document.getElementById('netBalance').textContent = formatCurrency(netBalance);
+            
+            // Update net status
+            const netStatus = document.getElementById('netStatus');
+            if (netBalance > 0) {
+                netStatus.textContent = '📈 Profit';
+                netStatus.style.color = '#4CAF50';
+            } else if (netBalance < 0) {
+                netStatus.textContent = '📉 Loss';
+                netStatus.style.color = '#F44336';
+            } else {
+                netStatus.textContent = '⚖️ Break Even';
+                netStatus.style.color = '#FF9800';
+            }
+            
+            // Update last updated time
+            document.getElementById('updateTime').textContent = 
+                timestamp ? timestamp.toLocaleTimeString() : 'Never';
+            
+            // Update chart
+            updateChart(buy.total, sell.total, expense.total);
+            
+            // Hide loading, show dashboard
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+        }
+        
+        // Update or create chart
+        function updateChart(buy, sell, expense) {
+            const ctx = document.getElementById('financeChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (financeChart) {
+                financeChart.destroy();
+            }
+            
+            // Create new chart
+            financeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Buy', 'Sell', 'Expenditure'],
+                    datasets: [{
+                        label: 'Amount (₹)',
+                        data: [buy, sell, expense],
+                        backgroundColor: [
+                            'rgba(76, 175, 80, 0.7)',
+                            'rgba(33, 150, 243, 0.7)',
+                            'rgba(255, 152, 0, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(76, 175, 80, 1)',
+                            'rgba(33, 150, 243, 1)',
+                            'rgba(255, 152, 0, 1)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 10,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${formatCurrency(context.raw)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + value.toLocaleString('en-IN');
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Show error message
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'none';
+            
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.textContent = message;
+            errorContainer.style.display = 'block';
+        }
+        
+        // Check if cache is valid (5 minutes)
+        function isCacheValid() {
+            if (!cache.timestamp) return false;
+            const fiveMinutes = 5 * 60 * 1000;
+            return (new Date() - cache.timestamp) < fiveMinutes;
+        }
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load data immediately
+            loadData();
+            
+            // Auto-refresh every 30 seconds
             setInterval(() => {
-                // In a real application, you would fetch new data from an API
-                // Here we just simulate a small change
-                const currentSanctioned = parseInt(document.getElementById('sanctionedValue').textContent.replace(/,/g, ''));
-                const currentCompleted = parseInt(document.getElementById('completedValue').textContent.replace(/,/g, ''));
-                
-                // Add random small increments for simulation
-                const newSanctioned = currentSanctioned + Math.floor(Math.random() * 5);
-                const newCompleted = currentCompleted + Math.floor(Math.random() * 3);
-                
-                // Update with animation
-                animateCounter('sanctionedValue', newSanctioned, 800);
-                animateCounter('completedValue', newCompleted, 800);
-                
-                // Update chart bars
-                const completedBar = document.querySelector('.completed-bar');
-                const progressBar = document.querySelector('.progress-bar');
-                
-                // Calculate new percentages
-                const completionRate = Math.round((newCompleted / newSanctioned) * 100);
-                const progressRate = 100 - completionRate;
-                
-                completedBar.style.width = completionRate + '%';
-                progressBar.style.width = progressRate + '%';
-                
-                // Update bar values
-                document.querySelectorAll('.chart-bar-value')[1].textContent = formatNumber(newCompleted);
-                document.querySelectorAll('.chart-bar-value')[2].textContent = formatNumber(newSanctioned - newCompleted);
-                
-            }, 30000); // Update every 30 seconds
+                if (!isCacheValid()) {
+                    loadData();
+                }
+            }, 30000);
+            
+            // Add keyboard shortcut (Ctrl+R or Cmd+R)
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+                    e.preventDefault();
+                    loadData();
+                }
+            });
         });
     </script>
 </body>
