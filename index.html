@@ -3,433 +3,303 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Dashboard</title>
+    <title>Daily Stock Dashboard</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
         }
-        
-        .dashboard-container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            width: 100%;
+
+        .container {
             max-width: 1200px;
-            overflow: hidden;
+            margin: 0 auto;
         }
-        
-        header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
+
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            color: white;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
-        
-        .last-updated {
-            opacity: 0.9;
-            font-size: 0.9rem;
-        }
-        
-        .stats-grid {
+
+        .dashboard {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            padding: 40px;
+            gap: 25px;
+            margin-bottom: 30px;
         }
-        
-        .stat-card {
-            background: #f8f9fa;
+
+        .card {
+            background: white;
             border-radius: 15px;
             padding: 30px;
-            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            position: relative;
-            overflow: hidden;
         }
-        
-        .stat-card:hover {
+
+        .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
         }
-        
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-        }
-        
-        .buy-card::before {
-            background: #4CAF50;
-        }
-        
-        .sell-card::before {
-            background: #2196F3;
-        }
-        
-        .expense-card::before {
-            background: #FF9800;
-        }
-        
-        .stat-label {
+
+        .card-header {
+            font-size: 1.1em;
             color: #666;
-            font-size: 1.1rem;
+            margin-bottom: 15px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 15px;
         }
-        
-        .stat-value {
-            font-size: 2.5rem;
+
+        .card-value {
+            font-size: 2.5em;
             font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .card.buy .card-value {
+            color: #10b981;
+        }
+
+        .card.sell .card-value {
+            color: #3b82f6;
+        }
+
+        .card.expenditure .card-value {
+            color: #ef4444;
+        }
+
+        .card-icon {
+            font-size: 3em;
+            opacity: 0.1;
+            position: absolute;
+            right: 20px;
+            top: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            padding: 50px;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .summary {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-top: 25px;
+        }
+
+        .summary h2 {
             color: #333;
-            margin: 10px 0;
+            margin-bottom: 20px;
+            font-size: 1.5em;
         }
-        
-        .stat-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-        }
-        
-        .controls {
-            padding: 20px 40px;
-            background: #f8f9fa;
-            border-top: 1px solid #eee;
+
+        .summary-item {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
         }
-        
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 50px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-        
-        button:active {
-            transform: translateY(0);
-        }
-        
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-        
-        .status {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .error {
-            color: #dc3545;
-            background: #ffe6e9;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 40px;
-            display: none;
-        }
-        
-        @media (max-width: 768px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-                padding: 20px;
-            }
-            
-            .controls {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
+
+        .summary-item:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #667eea;
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="dashboard-container">
-        <header>
-            <h1><i class="fas fa-chart-line"></i> Stock Dashboard</h1>
-            <p class="last-updated">Last Updated: <span id="lastUpdated">-</span></p>
-        </header>
+    <div class="container">
+        <h1>📊 Daily Stock Dashboard</h1>
         
-        <div class="error" id="errorMessage"></div>
-        
-        <div class="stats-grid">
-            <div class="stat-card buy-card">
-                <div class="stat-icon">
-                    <i class="fas fa-shopping-cart"></i>
-                </div>
-                <div class="stat-label">Total Buy</div>
-                <div class="stat-value" id="totalBuy">₹0.00</div>
-                <p>Sum of all purchases from Buy_Stock sheet</p>
+        <div id="loading" class="loading">
+            Loading your data...
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div id="dashboard" class="dashboard" style="display: none;">
+            <div class="card buy">
+                <div class="card-header">Total Buy</div>
+                <div class="card-value" id="totalBuy">₹0.00</div>
+                <div class="card-icon">📈</div>
             </div>
-            
-            <div class="stat-card sell-card">
-                <div class="stat-icon">
-                    <i class="fas fa-cash-register"></i>
-                </div>
-                <div class="stat-label">Total Sell</div>
-                <div class="stat-value" id="totalSell">₹0.00</div>
-                <p>Sum of all sales from Sell sheet</p>
+
+            <div class="card sell">
+                <div class="card-header">Total Sell</div>
+                <div class="card-value" id="totalSell">₹0.00</div>
+                <div class="card-icon">📉</div>
             </div>
-            
-            <div class="stat-card expense-card">
-                <div class="stat-icon">
-                    <i class="fas fa-receipt"></i>
-                </div>
-                <div class="stat-label">Total Expenditure</div>
-                <div class="stat-value" id="totalExpenditure">₹0.00</div>
-                <p>Sum of daily expenses from Other_Expenditure sheet</p>
+
+            <div class="card expenditure">
+                <div class="card-header">Total Expenditure</div>
+                <div class="card-value" id="totalExpenditure">₹0.00</div>
+                <div class="card-icon">💰</div>
             </div>
         </div>
-        
-        <div class="controls">
-            <div class="status">
-                <i class="fas fa-info-circle"></i>
-                <span id="statusText">Click "Refresh Data" to load your stock information</span>
+
+        <div id="summary" class="summary" style="display: none;">
+            <h2>Financial Summary</h2>
+            <div class="summary-item">
+                <span>Total Buy:</span>
+                <span id="summaryBuy">₹0.00</span>
             </div>
-            <button id="refreshBtn">
-                <i class="fas fa-sync-alt"></i>
-                <span>Refresh Data</span>
-            </button>
+            <div class="summary-item">
+                <span>Total Sell:</span>
+                <span id="summarySell">₹0.00</span>
+            </div>
+            <div class="summary-item">
+                <span>Total Expenditure:</span>
+                <span id="summaryExpenditure">₹0.00</span>
+            </div>
+            <div class="summary-item">
+                <span>Net Position:</span>
+                <span id="netPosition">₹0.00</span>
+            </div>
         </div>
+
+        <div id="lastUpdated" class="last-updated" style="display: none;"></div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script>
-        class StockDashboard {
-            constructor() {
-                // Your Google Sheet IDs (extracted from the provided link)
-                this.sheetBaseUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQkIpWAUgoPanUyc3qEyn1ZpsGcYHAStO9-MvJtO-0c8KjfdUllKNhktxg70cHpXw/pub?output=csv';
-                
-                // CSV endpoints for each sheet
-                this.sheetEndpoints = {
-                    buy: '&gid=0', // Buy_Stock sheet
-                    sell: '&gid=1', // Sell sheet
-                    expenditure: '&gid=2' // Other_Expenditure sheet
-                };
-                
-                this.elements = {
-                    totalBuy: document.getElementById('totalBuy'),
-                    totalSell: document.getElementById('totalSell'),
-                    totalExpenditure: document.getElementById('totalExpenditure'),
-                    lastUpdated: document.getElementById('lastUpdated'),
-                    refreshBtn: document.getElementById('refreshBtn'),
-                    statusText: document.getElementById('statusText'),
-                    errorMessage: document.getElementById('errorMessage')
-                };
-                
-                this.init();
-            }
+        const SHEET_ID = '1vQkIpWAUgoPanUyc3qEyn1ZpsGcYHAStO9-MvJtO-0c8KjfdUllKNhktxg70cHpXw';
+        const SHEETS = {
+            buy: 'Buy_Stock',
+            sell: 'Sell',
+            expenditure: 'Other_Expenditure'
+        };
+
+        function formatCurrency(value) {
+            return '₹' + parseFloat(value).toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function getCsvUrl(sheetName) {
+            return `https://docs.google.com/spreadsheets/d/e/2PACX-${SHEET_ID}/pub?gid=0&single=true&output=csv&sheet=${encodeURIComponent(sheetName)}`;
+        }
+
+        async function fetchSheetData(sheetName) {
+            const url = getCsvUrl(sheetName);
             
-            init() {
-                this.elements.refreshBtn.addEventListener('click', () => this.loadData());
-                // Load data on page load
-                this.loadData();
-            }
-            
-            async loadData() {
-                this.setLoading(true);
-                this.hideError();
-                
-                try {
-                    // Fetch all data in parallel
-                    const [buyData, sellData, expenditureData] = await Promise.all([
-                        this.fetchSheetData('buy'),
-                        this.fetchSheetData('sell'),
-                        this.fetchSheetData('expenditure')
-                    ]);
-                    
-                    // Calculate totals
-                    const buyTotal = this.calculateTotal(buyData, 'Total_Cost');
-                    const sellTotal = this.calculateTotal(sellData, 'Total_Cost');
-                    const expenditureTotal = this.calculateTotal(expenditureData, 'Amount');
-                    
-                    // Update UI
-                    this.updateDisplay(buyTotal, sellTotal, expenditureTotal);
-                    this.updateLastUpdated();
-                    this.setStatus('Data loaded successfully');
-                    
-                } catch (error) {
-                    this.showError(`Failed to load data: ${error.message}`);
-                    this.setStatus('Failed to load data');
-                } finally {
-                    this.setLoading(false);
-                }
-            }
-            
-            async fetchSheetData(sheetType) {
-                const url = this.sheetBaseUrl + this.sheetEndpoints[sheetType];
-                this.setStatus(`Loading ${sheetType} data...`);
-                
-                try {
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-                    
-                    const csvText = await response.text();
-                    return this.parseCSV(csvText);
-                    
-                } catch (error) {
-                    console.error(`Error fetching ${sheetType} data:`, error);
-                    throw new Error(`Could not load ${sheetType} sheet`);
-                }
-            }
-            
-            parseCSV(csvText) {
-                const lines = csvText.split('\n');
-                if (lines.length < 2) return [];
-                
-                // Extract headers (first row)
-                const headers = lines[0].split(',').map(header => 
-                    header.trim().replace(/"/g, '')
-                );
-                
-                // Parse data rows
-                const data = [];
-                for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i].trim();
-                    if (!line) continue;
-                    
-                    const values = line.split(',').map(value => 
-                        value.trim().replace(/"/g, '')
-                    );
-                    
-                    const row = {};
-                    headers.forEach((header, index) => {
-                        row[header] = values[index] || '';
-                    });
-                    
-                    data.push(row);
-                }
-                
-                return data;
-            }
-            
-            calculateTotal(data, columnName) {
-                let total = 0;
-                data.forEach(row => {
-                    // Find the correct column (case-insensitive)
-                    const column = Object.keys(row).find(key => 
-                        key.toLowerCase() === columnName.toLowerCase()
-                    );
-                    
-                    if (column && row[column]) {
-                        const value = parseFloat(row[column].replace(/[^\d.-]/g, ''));
-                        if (!isNaN(value)) {
-                            total += value;
-                        }
+            return new Promise((resolve, reject) => {
+                Papa.parse(url, {
+                    download: true,
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        resolve(results.data);
+                    },
+                    error: function(error) {
+                        reject(error);
                     }
                 });
-                return total;
-            }
+            });
+        }
+
+        function calculateTotal(data, columnName) {
+            let total = 0;
             
-            updateDisplay(buyTotal, sellTotal, expenditureTotal) {
-                // Format numbers as Indian Rupees
-                const formatter = new Intl.NumberFormat('en-IN', {
-                    style: 'currency',
-                    currency: 'INR',
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
-                
-                this.elements.totalBuy.textContent = formatter.format(buyTotal);
-                this.elements.totalSell.textContent = formatter.format(sellTotal);
-                this.elements.totalExpenditure.textContent = formatter.format(expenditureTotal);
-            }
-            
-            updateLastUpdated() {
-                const now = new Date();
-                this.elements.lastUpdated.textContent = now.toLocaleString('en-IN', {
-                    dateStyle: 'medium',
-                    timeStyle: 'short'
-                });
-            }
-            
-            setLoading(isLoading) {
-                this.elements.refreshBtn.disabled = isLoading;
-                const icon = this.elements.refreshBtn.querySelector('i');
-                const text = this.elements.refreshBtn.querySelector('span');
-                
-                if (isLoading) {
-                    icon.className = 'fas fa-spinner loading';
-                    text.textContent = 'Loading...';
-                } else {
-                    icon.className = 'fas fa-sync-alt';
-                    text.textContent = 'Refresh Data';
+            data.forEach(row => {
+                const value = row[columnName];
+                if (value) {
+                    const numValue = parseFloat(value.toString().replace(/[^0-9.-]/g, ''));
+                    if (!isNaN(numValue)) {
+                        total += numValue;
+                    }
                 }
-            }
+            });
             
-            setStatus(message) {
-                this.elements.statusText.textContent = message;
-            }
-            
-            showError(message) {
-                this.elements.errorMessage.textContent = message;
-                this.elements.errorMessage.style.display = 'block';
-            }
-            
-            hideError() {
-                this.elements.errorMessage.style.display = 'none';
+            return total;
+        }
+
+        async function loadDashboard() {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('error').style.display = 'none';
+
+                // Fetch all three sheets
+                const [buyData, sellData, expenditureData] = await Promise.all([
+                    fetchSheetData(SHEETS.buy),
+                    fetchSheetData(SHEETS.sell),
+                    fetchSheetData(SHEETS.expenditure)
+                ]);
+
+                // Calculate totals
+                const totalBuy = calculateTotal(buyData, 'Total_Cost');
+                const totalSell = calculateTotal(sellData, 'Total_Cost');
+                const totalExpenditure = calculateTotal(expenditureData, 'Total_Cost');
+
+                // Update the dashboard
+                document.getElementById('totalBuy').textContent = formatCurrency(totalBuy);
+                document.getElementById('totalSell').textContent = formatCurrency(totalSell);
+                document.getElementById('totalExpenditure').textContent = formatCurrency(totalExpenditure);
+
+                // Update summary
+                document.getElementById('summaryBuy').textContent = formatCurrency(totalBuy);
+                document.getElementById('summarySell').textContent = formatCurrency(totalSell);
+                document.getElementById('summaryExpenditure').textContent = formatCurrency(totalExpenditure);
+                
+                const netPosition = totalSell - totalBuy - totalExpenditure;
+                const netElement = document.getElementById('netPosition');
+                netElement.textContent = formatCurrency(netPosition);
+                netElement.style.color = netPosition >= 0 ? '#10b981' : '#ef4444';
+
+                // Show dashboard
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'grid';
+                document.getElementById('summary').style.display = 'block';
+                
+                // Show last updated time
+                const lastUpdated = document.getElementById('lastUpdated');
+                lastUpdated.textContent = `Last updated: ${new Date().toLocaleString()}`;
+                lastUpdated.style.display = 'block';
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = `Error loading data: ${error.message}. Please check your Google Sheet permissions and sheet names.`;
             }
         }
-        
-        // Initialize the dashboard when the page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            new StockDashboard();
-        });
+
+        // Load dashboard on page load
+        loadDashboard();
+
+        // Refresh every 5 minutes
+        setInterval(loadDashboard, 5 * 60 * 1000);
     </script>
 </body>
 </html>
