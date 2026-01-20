@@ -63,6 +63,14 @@
         .refresh-btn {
             margin-top: 10px;
         }
+        .error-message {
+            display: none;
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -70,6 +78,10 @@
         <div class="dashboard-header">
             <h1><i class="fas fa-chart-line me-2"></i>Daily Stock Dashboard</h1>
             <p class="mb-0">Real-time tracking of your stock transactions</p>
+        </div>
+
+        <div class="error-message" id="error-message">
+            Error loading data. Please check your Google Sheet sharing settings.
         </div>
 
         <div class="text-center loading" id="loading">
@@ -88,6 +100,7 @@
                     <h3>Total Buy</h3>
                     <div class="kpi-value" id="total-buy">$0.00</div>
                     <p>Total investment in stock purchases</p>
+                    <small class="text-muted">From Buy_Stock sheet</small>
                 </div>
             </div>
             
@@ -99,6 +112,7 @@
                     <h3>Total Sell</h3>
                     <div class="kpi-value" id="total-sell">$0.00</div>
                     <p>Total revenue from stock sales</p>
+                    <small class="text-muted">From Sell sheet</small>
                 </div>
             </div>
             
@@ -110,6 +124,7 @@
                     <h3>Daily Expenditure</h3>
                     <div class="kpi-value" id="daily-expenditure">$0.00</div>
                     <p>Net expenditure (Buy - Sell)</p>
+                    <small class="text-muted">Calculated automatically</small>
                 </div>
             </div>
         </div>
@@ -118,20 +133,37 @@
             <button class="btn btn-primary" onclick="fetchData()">
                 <i class="fas fa-sync-alt me-2"></i>Refresh Data
             </button>
+            <button class="btn btn-outline-secondary ms-2" onclick="testUrls()">
+                <i class="fas fa-bug me-2"></i>Test URLs
+            </button>
         </div>
 
         <div class="last-updated" id="last-updated">
             Last updated: Never
         </div>
+
+        <div class="mt-4" id="debug-info" style="display: none; font-size: 0.8rem; color: #666;">
+            <h6>Debug Information:</h6>
+            <div id="url-info"></div>
+            <div id="data-sample"></div>
+        </div>
     </div>
 
     <script>
-        // Google Sheet configuration
+        // Google Sheet configuration - Using your provided links
+        // First, let's extract the sheet ID from your links
         const GOOGLE_SHEETS = {
-            baseUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQkIpWAUgoPanUyc3qEyn1ZpsGcYHAStO9-MvJtO-0c8KjfdUllKNhktxg70cHpXw/pub?gid=',
+            // Your main sheet ID from the first link
+            sheetId: '1QkIpWAUgoPanUyc3qEyn1ZpsGcYHAStO9-MvJtO-0c8KjfdUllKNhktxg70cHpXw',
+            
+            // Alternative approach using CSV export
+            csvExport: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQkIpWAUgoPanUyc3qEyn1ZpsGcYHAStO9-MvJtO-0c8KjfdUllKNhktxg70cHpXw/pub?output=csv',
+            
+            // Try different approaches to access data
             sheets: {
-                buy: '752590382&single=true&output=csv', // Buy_Stock worksheet
-                sell: '1412337879&single=true&output=csv' // Sell worksheet
+                // Using the view/edit URLs you provided
+                buy: 'https://docs.google.com/spreadsheets/d/12yHqIhFQZyEwYJlmBfscDmaXZpp2lXQK/edit?gid=752590382',
+                sell: 'https://docs.google.com/spreadsheets/d/12yHqIhFQZyEwYJlmBfscDmaXZpp2lXQK/edit?gid=1412337879'
             }
         };
 
@@ -144,53 +176,168 @@
             }).format(amount);
         }
 
-        // Parse CSV data
+        // Parse CSV data - more robust parsing
         function parseCSV(csvText) {
-            const lines = csvText.split('\n');
-            const headers = lines[0].split(',').map(h => h.trim());
-            const data = [];
-            
-            for (let i = 1; i < lines.length; i++) {
-                if (lines[i].trim() === '') continue;
+            try {
+                const lines = csvText.split('\n').filter(line => line.trim() !== '');
+                if (lines.length === 0) {
+                    console.error('CSV is empty');
+                    return [];
+                }
                 
-                const values = lines[i].split(',').map(v => v.trim());
-                const row = {};
-                headers.forEach((header, index) => {
-                    row[header] = values[index] || '';
-                });
-                data.push(row);
+                const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                const data = [];
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    // Handle quoted values with commas
+                    const regex = /(".*?"|[^",]+)(?=\s*,|\s*$)/g;
+                    const matches = line.match(regex) || [];
+                    const values = matches.map(v => v.replace(/"/g, '').trim());
+                    
+                    if (values.length >= headers.length) {
+                        const row = {};
+                        headers.forEach((header, index) => {
+                            row[header] = values[index] || '';
+                        });
+                        data.push(row);
+                    }
+                }
+                
+                console.log('Parsed data:', data);
+                return data;
+            } catch (error) {
+                console.error('Error parsing CSV:', error);
+                return [];
             }
-            return data;
         }
 
         // Calculate sum of a column
         function calculateSum(data, columnName) {
             let sum = 0;
+            if (!data || data.length === 0) return 0;
+            
+            // Try different possible column names
+            const possibleColumnNames = [
+                columnName,
+                columnName.toLowerCase(),
+                columnName.replace(/_/g, ' '),
+                columnName.replace(/_/g, '').toLowerCase()
+            ];
+            
             data.forEach(row => {
-                const value = parseFloat(row[columnName]) || 0;
+                // Find the correct column name
+                let value = 0;
+                for (const colName of possibleColumnNames) {
+                    if (row[colName] !== undefined) {
+                        const numValue = parseFloat(row[colName].replace(/[^0-9.-]+/g, ''));
+                        if (!isNaN(numValue)) {
+                            value = numValue;
+                            break;
+                        }
+                    }
+                }
                 sum += value;
             });
             return sum;
         }
 
-        // Fetch data from Google Sheets
+        // Test the URLs to see what data they return
+        async function testUrls() {
+            console.log('Testing URLs...');
+            const urls = [
+                GOOGLE_SHEETS.csvExport,
+                GOOGLE_SHEETS.sheets.buy,
+                GOOGLE_SHEETS.sheets.sell
+            ];
+            
+            const debugInfo = document.getElementById('debug-info');
+            const urlInfo = document.getElementById('url-info');
+            debugInfo.style.display = 'block';
+            urlInfo.innerHTML = '';
+            
+            for (const url of urls) {
+                try {
+                    const response = await fetch(url);
+                    const text = await response.text();
+                    urlInfo.innerHTML += `<div><strong>${url}</strong><br>Status: ${response.status}<br>First 500 chars:<br><pre>${text.substring(0, 500)}</pre></div><hr>`;
+                    console.log(`URL ${url} returned:`, text.substring(0, 200));
+                } catch (error) {
+                    urlInfo.innerHTML += `<div><strong>${url}</strong><br>Error: ${error.message}</div><hr>`;
+                    console.error(`Error fetching ${url}:`, error);
+                }
+            }
+        }
+
+        // Fetch data from Google Sheets using Google Sheets API
         async function fetchData() {
             try {
                 // Show loading
                 document.getElementById('loading').style.display = 'block';
+                document.getElementById('error-message').style.display = 'none';
                 document.getElementById('dashboard-content').style.opacity = '0.5';
                 
-                // Fetch Buy data
-                const buyResponse = await fetch(`${GOOGLE_SHEETS.baseUrl}${GOOGLE_SHEETS.sheets.buy}`);
-                const buyCSV = await buyResponse.text();
-                const buyData = parseCSV(buyCSV);
-                const totalBuy = calculateSum(buyData, 'Total_Cost_Buy');
+                console.log('Fetching data from Google Sheets...');
                 
-                // Fetch Sell data
-                const sellResponse = await fetch(`${GOOGLE_SHEETS.baseUrl}${GOOGLE_SHEETS.sheets.sell}`);
-                const sellCSV = await sellResponse.text();
-                const sellData = parseCSV(sellCSV);
-                const totalSell = calculateSum(sellData, 'Total_Cost_Sell');
+                // Try approach 1: Direct CSV export from the first link
+                const csvUrl = GOOGLE_SHEETS.csvExport;
+                console.log('Fetching from CSV URL:', csvUrl);
+                
+                const response = await fetch(csvUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const csvText = await response.text();
+                console.log('Raw CSV data (first 500 chars):', csvText.substring(0, 500));
+                
+                // Parse the CSV data
+                const allData = parseCSV(csvText);
+                console.log('Parsed all data:', allData);
+                
+                // Since we get all sheets in one CSV, we need to identify which rows belong to which sheet
+                // Let's assume the CSV includes all data and we need to filter/sum based on column names
+                
+                let totalBuy = 0;
+                let totalSell = 0;
+                
+                // Look for buy and sell columns in the data
+                allData.forEach(row => {
+                    // Check for buy-related columns
+                    if (row.Total_Cost_Buy || row['Total Cost Buy'] || row.total_cost_buy) {
+                        const buyAmount = parseFloat((row.Total_Cost_Buy || row['Total Cost Buy'] || row.total_cost_buy || '0').replace(/[^0-9.-]+/g, ''));
+                        if (!isNaN(buyAmount)) totalBuy += buyAmount;
+                    }
+                    
+                    // Check for sell-related columns
+                    if (row.Total_Cost_Sell || row['Total Cost Sell'] || row.total_cost_sell) {
+                        const sellAmount = parseFloat((row.Total_Cost_Sell || row['Total Cost Sell'] || row.total_cost_sell || '0').replace(/[^0-9.-]+/g, ''));
+                        if (!isNaN(sellAmount)) totalSell += sellAmount;
+                    }
+                });
+                
+                // If no data found, try alternative column names
+                if (totalBuy === 0 && totalSell === 0) {
+                    // Try summing all numeric columns as fallback
+                    allData.forEach(row => {
+                        Object.keys(row).forEach(key => {
+                            const value = row[key];
+                            const numValue = parseFloat(value.replace(/[^0-9.-]+/g, ''));
+                            if (!isNaN(numValue)) {
+                                // Heuristic: if column name contains "buy", add to buy total
+                                if (key.toLowerCase().includes('buy')) {
+                                    totalBuy += numValue;
+                                }
+                                // If column name contains "sell", add to sell total
+                                if (key.toLowerCase().includes('sell')) {
+                                    totalSell += numValue;
+                                }
+                            }
+                        });
+                    });
+                }
+                
+                console.log('Calculated totals - Buy:', totalBuy, 'Sell:', totalSell);
                 
                 // Calculate daily expenditure
                 const dailyExpenditure = totalBuy - totalSell;
@@ -205,9 +352,17 @@
                 document.getElementById('last-updated').innerHTML = 
                     `Last updated: ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} | ${now.toLocaleDateString()}`;
                 
+                // Show data sample for debugging
+                if (allData.length > 0) {
+                    document.getElementById('data-sample').innerHTML = 
+                        `<strong>First row of data:</strong><br><pre>${JSON.stringify(allData[0], null, 2)}</pre>`;
+                }
+                
             } catch (error) {
                 console.error('Error fetching data:', error);
-                alert('Error fetching data from Google Sheets. Please check the console for details.');
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('error-message').innerHTML = 
+                    `Error loading data: ${error.message}<br>Please ensure your Google Sheet is published to the web.`;
             } finally {
                 // Hide loading
                 document.getElementById('loading').style.display = 'none';
@@ -217,10 +372,11 @@
 
         // Initialize dashboard on page load
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dashboard initialized');
             fetchData();
             
-            // Auto-refresh every 5 minutes
-            setInterval(fetchData, 5 * 60 * 1000);
+            // Auto-refresh every 2 minutes
+            setInterval(fetchData, 2 * 60 * 1000);
         });
     </script>
 
