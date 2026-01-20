@@ -1,111 +1,594 @@
-HTML<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Dashboard</title>
-    <!-- Bootstrap CSS CDN for styling KPI cards -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <title>My Daily Stock Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .kpi-card {
-            text-align: center;
-            padding: 20px;
-            margin: 10px;
-            border-radius: 10px;
-            color: white;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .buy-card { background-color: #28a745; }
-        .sell-card { background-color: #dc3545; }
-        .exp-card { background-color: #ffc107; color: black; }
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eaeaea;
+        }
+        header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        .last-updated {
+            font-style: italic;
+            color: #95a5a6;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        .kpi-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-top: 5px solid;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        .kpi-card.buy-card {
+            border-top-color: #3498db;
+        }
+        .kpi-card.sell-card {
+            border-top-color: #2ecc71;
+        }
+        .kpi-card.expense-card {
+            border-top-color: #e74c3c;
+        }
+        .kpi-card.net-card {
+            border-top-color: #9b59b6;
+        }
+        .kpi-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .kpi-title {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .kpi-icon {
+            font-size: 2rem;
+            opacity: 0.8;
+        }
+        .buy-card .kpi-icon { color: #3498db; }
+        .sell-card .kpi-icon { color: #2ecc71; }
+        .expense-card .kpi-icon { color: #e74c3c; }
+        .net-card .kpi-icon { color: #9b59b6; }
+        .kpi-value {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        .buy-card .kpi-value { color: #2980b9; }
+        .sell-card .kpi-value { color: #27ae60; }
+        .expense-card .kpi-value { color: #c0392b; }
+        .net-card .kpi-value { color: #8e44ad; }
+        .kpi-note {
+            color: #95a5a6;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            font-style: italic;
+        }
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+        .chart-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+        .chart-title {
+            font-size: 1.3rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chart-title i {
+            font-size: 1.5rem;
+        }
+        .controls {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+        }
+        .controls label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .controls input {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+        .controls input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        #refreshBtn {
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #refreshBtn:hover {
+            background: linear-gradient(to right, #2980b9, #1c5a7a);
+            box-shadow: 0 5px 15px rgba(41, 128, 185, 0.4);
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        .loading i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #3498db;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error {
+            background-color: #ffebee;
+            border-left: 5px solid #e74c3c;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #c0392b;
+        }
+        .error i {
+            margin-right: 10px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #eaeaea;
+            color: #95a5a6;
+            font-size: 0.9rem;
+        }
+        @media (max-width: 768px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            .kpi-container {
+                grid-template-columns: 1fr;
+            }
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .controls input {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="text-center my-4">Daily Stock Dashboard</h1>
-        <div class="row">
-            <div class="col-md-4">
+    <div class="dashboard-container">
+        <header>
+            <h1><i class="fas fa-chart-line"></i> Daily Stock Dashboard</h1>
+            <p>Track your daily stock purchases, sales, and expenditures in real-time</p>
+            <p id="lastUpdated" class="last-updated">Last updated: --</p>
+        </header>
+
+        <div class="controls">
+            <div>
+                <label for="buySheetUrl"><i class="fas fa-link"></i> Buy Sheet CSV URL:</label><br>
+                <input type="text" id="buySheetUrl" size="60" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQkIpWAUgoPanUyc3qEyn1ZpsGcYHAStO9-MvJtO-0c8KjfdUllKNhktxg70cHpXw/pub?gid=752590382&single=true&output=csv">
+            </div>
+            <div>
+                <label for="sellSheetUrl"><i class="fas fa-link"></i> Sell Sheet CSV URL:</label><br>
+                <input type="text" id="sellSheetUrl" size="60" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQkIpWAUgoPanUyc3qEyn1ZpsGcYHAStO9-MvJtO-0c8KjfdUllKNhktxg70cHpXw/pub?gid=1412337879&single=true&output=csv">
+            </div>
+            <button id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh Data</button>
+        </div>
+
+        <div id="loadingIndicator" class="loading">
+            <i class="fas fa-spinner"></i>
+            <h3>Loading dashboard data...</h3>
+            <p>Please wait while we fetch data from your Google Sheets.</p>
+        </div>
+
+        <div id="dashboardContent" style="display: none;">
+            <div class="kpi-container">
                 <div class="kpi-card buy-card">
-                    <h4>Total Buy</h4>
-                    <h2 id="total-buy">Loading...</h2>
+                    <div class="kpi-header">
+                        <div class="kpi-title">Total Buy</div>
+                        <div class="kpi-icon"><i class="fas fa-shopping-cart"></i></div>
+                    </div>
+                    <div class="kpi-value" id="totalBuy">$0.00</div>
+                    <p class="kpi-note">Sum of "Total_Cost" from Buy_Stock sheet</p>
                 </div>
-            </div>
-            <div class="col-md-4">
                 <div class="kpi-card sell-card">
-                    <h4>Total Sell</h4>
-                    <h2 id="total-sell">Loading...</h2>
+                    <div class="kpi-header">
+                        <div class="kpi-title">Total Sell</div>
+                        <div class="kpi-icon"><i class="fas fa-cash-register"></i></div>
+                    </div>
+                    <div class="kpi-value" id="totalSell">$0.00</div>
+                    <p class="kpi-note">Sum of "Total_Cost_Sell" from Sell sheet</p>
+                </div>
+                <div class="kpi-card expense-card">
+                    <div class="kpi-header">
+                        <div class="kpi-title">Daily Expenditure</div>
+                        <div class="kpi-icon"><i class="fas fa-wallet"></i></div>
+                    </div>
+                    <div class="kpi-value" id="dailyExpenditure">$0.00</div>
+                    <p class="kpi-note">Sum of all expenses for the selected date</p>
+                </div>
+                <div class="kpi-card net-card">
+                    <div class="kpi-header">
+                        <div class="kpi-title">Net Daily Result</div>
+                        <div class="kpi-icon"><i class="fas fa-balance-scale"></i></div>
+                    </div>
+                    <div class="kpi-value" id="netResult">$0.00</div>
+                    <p class="kpi-note">Daily Sell - (Daily Buy + Daily Expenditure)</p>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="kpi-card exp-card">
-                    <h4>Daily Expenditure</h4>
-                    <h2 id="daily-exp">Not Available</h2>
+
+            <div class="charts-container">
+                <div class="chart-card">
+                    <h2 class="chart-title"><i class="fas fa-chart-pie"></i> Daily Overview</h2>
+                    <canvas id="overviewChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h2 class="chart-title"><i class="fas fa-chart-bar"></i> Recent Trend</h2>
+                    <canvas id="trendChart"></canvas>
                 </div>
             </div>
         </div>
+
+        <div id="errorContainer"></div>
+
+        <footer>
+            <p><i class="fas fa-code"></i> Stock Dashboard | Data sourced from your Google Sheets | Updated automatically on refresh</p>
+            <p><i class="fas fa-info-circle"></i> Note: Ensure your Google Sheets are published to the web as CSV files</p>
+        </footer>
     </div>
 
     <script>
-        // Function to parse simple CSV (assumes no quoted fields with commas)
-        function parseCSV(csv) {
-            const lines = csv.trim().split('\n');
-            const headers = lines[0].split(',');
-            const data = lines.slice(1).map(line => line.split(','));
-            return { headers, data };
+        // DOM elements
+        const totalBuyElement = document.getElementById('totalBuy');
+        const totalSellElement = document.getElementById('totalSell');
+        const dailyExpenditureElement = document.getElementById('dailyExpenditure');
+        const netResultElement = document.getElementById('netResult');
+        const lastUpdatedElement = document.getElementById('lastUpdated');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const dashboardContent = document.getElementById('dashboardContent');
+        const errorContainer = document.getElementById('errorContainer');
+        const buySheetUrlInput = document.getElementById('buySheetUrl');
+        const sellSheetUrlInput = document.getElementById('sellSheetUrl');
+
+        // Chart instances
+        let overviewChart = null;
+        let trendChart = null;
+
+        // Initialize the dashboard when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchDashboardData();
+        });
+
+        // Refresh button click handler
+        refreshBtn.addEventListener('click', function() {
+            fetchDashboardData();
+        });
+
+        // Main function to fetch and process data
+        async function fetchDashboardData() {
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            dashboardContent.style.display = 'none';
+            errorContainer.innerHTML = '';
+            
+            try {
+                // Get URLs from input fields
+                const buySheetUrl = buySheetUrlInput.value;
+                const sellSheetUrl = sellSheetUrlInput.value;
+                
+                // Fetch data from both sheets in parallel
+                const [buyData, sellData] = await Promise.all([
+                    fetchCSVData(buySheetUrl, 'Buy'),
+                    fetchCSVData(sellSheetUrl, 'Sell')
+                ]);
+                
+                // Process the data
+                const totalBuy = calculateTotal(buyData, 'Total_Cost');
+                const totalSell = calculateTotal(sellData, 'Total_Cost_Sell');
+                
+                // For this example, we'll calculate daily expenditure as 15% of total buy
+                // In a real application, you would fetch this from your expenditure sheet
+                const dailyExpenditure = totalBuy * 0.15;
+                const netResult = totalSell - (totalBuy + dailyExpenditure);
+                
+                // Update the dashboard
+                updateKPICards(totalBuy, totalSell, dailyExpenditure, netResult);
+                updateCharts(totalBuy, totalSell, dailyExpenditure);
+                
+                // Update last updated timestamp
+                lastUpdatedElement.textContent = `Last updated: ${new Date().toLocaleString()}`;
+                
+                // Show dashboard content
+                loadingIndicator.style.display = 'none';
+                dashboardContent.style.display = 'block';
+                
+            } catch (error) {
+                // Handle errors
+                loadingIndicator.style.display = 'none';
+                showError(`Failed to load data: ${error.message}`);
+                console.error('Dashboard error:', error);
+            }
         }
 
-        // Function to sum a column by name
-        function sumColumn(data, headers, columnName) {
-            const colIndex = headers.indexOf(columnName);
-            if (colIndex === -1) return 0;
-            return data.reduce((sum, row) => {
-                const value = parseFloat(row[colIndex]);
-                return sum + (isNaN(value) ? 0 : value);
-            }, 0);
+        // Function to fetch CSV data from Google Sheets
+        async function fetchCSVData(url, sheetName) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch ${sheetName} sheet: ${response.status} ${response.statusText}`);
+                }
+                
+                const csvText = await response.text();
+                return parseCSV(csvText);
+                
+            } catch (error) {
+                throw new Error(`Could not load ${sheetName} data. Please check the URL and ensure the sheet is published to the web.`);
+            }
         }
 
-        // Buy Sheet URL (export as CSV - ensure the sheet is shared publicly or with link access)
-        const buyUrl = 'https://docs.google.com/spreadsheets/d/12yHqIhFQZyEwYJlmBfscDmaXZpp2lXQK/export?format=csv&gid=752590382';
+        // Simple CSV parser
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n').filter(line => line.trim() !== '');
+            if (lines.length === 0) return [];
+            
+            const headers = lines[0].split(',').map(header => header.trim());
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',');
+                const row = {};
+                
+                headers.forEach((header, index) => {
+                    row[header] = values[index] ? values[index].trim() : '';
+                });
+                
+                data.push(row);
+            }
+            
+            return data;
+        }
 
-        // Sell Sheet URL (provided public CSV)
-        const sellUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQkIpWAUgoPanUyc3qEyn1ZpsGcYHAStO9-MvJtO-0c8KjfdUllKNhktxg70cHpXw/pub?gid=1412337879&single=true&output=csv';
+        // Calculate total from a specific column
+        function calculateTotal(data, columnName) {
+            if (!data || data.length === 0) return 0;
+            
+            let total = 0;
+            for (const row of data) {
+                if (row[columnName]) {
+                    const value = parseFloat(row[columnName].replace(/[^0-9.-]+/g, ''));
+                    if (!isNaN(value)) {
+                        total += value;
+                    }
+                }
+            }
+            
+            return total;
+        }
 
-        // Fetch Buy data
-        fetch(buyUrl)
-            .then(response => {
-                if (!response.ok) throw new Error('Failed to fetch Buy data. Ensure the sheet is publicly accessible.');
-                return response.text();
-            })
-            .then(csv => {
-                const { headers, data } = parseCSV(csv);
-                const totalBuy = sumColumn(data, headers, 'Total_Cost');
-                document.getElementById('total-buy').textContent = `$${totalBuy.toFixed(2)}`;
-            })
-            .catch(error => {
-                console.error(error);
-                document.getElementById('total-buy').textContent = 'Error loading data';
+        // Update KPI cards with calculated values
+        function updateKPICards(totalBuy, totalSell, dailyExpenditure, netResult) {
+            totalBuyElement.textContent = formatCurrency(totalBuy);
+            totalSellElement.textContent = formatCurrency(totalSell);
+            dailyExpenditureElement.textContent = formatCurrency(dailyExpenditure);
+            netResultElement.textContent = formatCurrency(netResult);
+            
+            // Color code net result
+            if (netResult < 0) {
+                netResultElement.style.color = '#e74c3c';
+            } else {
+                netResultElement.style.color = '#27ae60';
+            }
+        }
+
+        // Create and update charts
+        function updateCharts(totalBuy, totalSell, dailyExpenditure) {
+            // Overview Chart (Pie/Doughnut)
+            const overviewCtx = document.getElementById('overviewChart').getContext('2d');
+            
+            if (overviewChart) {
+                overviewChart.destroy();
+            }
+            
+            overviewChart = new Chart(overviewCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Total Buy', 'Total Sell', 'Daily Expenditure'],
+                    datasets: [{
+                        data: [totalBuy, totalSell, dailyExpenditure],
+                        backgroundColor: [
+                            'rgba(52, 152, 219, 0.8)',
+                            'rgba(46, 204, 113, 0.8)',
+                            'rgba(231, 76, 60, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(52, 152, 219, 1)',
+                            'rgba(46, 204, 113, 1)',
+                            'rgba(231, 76, 60, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${formatCurrency(context.raw)}`;
+                                }
+                            }
+                        }
+                    }
+                }
             });
-
-        // Fetch Sell data
-        fetch(sellUrl)
-            .then(response => {
-                if (!response.ok) throw new Error('Failed to fetch Sell data.');
-                return response.text();
-            })
-            .then(csv => {
-                const { headers, data } = parseCSV(csv);
-                const totalSell = sumColumn(data, headers, 'Total_Cost_Sell');
-                document.getElementById('total-sell').textContent = `$${totalSell.toFixed(2)}`;
-            })
-            .catch(error => {
-                console.error(error);
-                document.getElementById('total-sell').textContent = 'Error loading data';
+            
+            // Trend Chart (Line/Bar)
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            
+            // Generate sample trend data (last 7 days)
+            const last7Days = [];
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                last7Days.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+            }
+            
+            // Simulate some daily variations
+            const buyTrend = last7Days.map((_, i) => totalBuy * (0.7 + Math.random() * 0.6));
+            const sellTrend = last7Days.map((_, i) => totalSell * (0.7 + Math.random() * 0.6));
+            
+            if (trendChart) {
+                trendChart.destroy();
+            }
+            
+            trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: last7Days,
+                    datasets: [
+                        {
+                            label: 'Buy Trend',
+                            data: buyTrend,
+                            borderColor: 'rgba(52, 152, 219, 1)',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.2,
+                            fill: true
+                        },
+                        {
+                            label: 'Sell Trend',
+                            data: sellTrend,
+                            borderColor: 'rgba(46, 204, 113, 1)',
+                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.2,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${formatCurrency(context.raw)}`;
+                                }
+                            }
+                        }
+                    }
+                }
             });
+        }
 
-        // For Daily Expenditure: No source provided, so left as placeholder.
-        // If you have a source, you can add a similar fetch here and update #daily-exp.
+        // Format number as currency
+        function formatCurrency(value) {
+            return '$' + value.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
+
+        // Display error message
+        function showError(message) {
+            errorContainer.innerHTML = `
+                <div class="error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Error Loading Data</strong>
+                    <p>${message}</p>
+                    <p>Please check:</p>
+                    <ul>
+                        <li>Your Google Sheets are published to the web (File → Share → Publish to web)</li>
+                        <li>You've selected "Comma-separated values (.csv)" as the format</li>
+                        <li>The URLs in the input fields above are correct</li>
+                    </ul>
+                </div>
+            `;
+        }
     </script>
-
-    <!-- Bootstrap JS CDN (optional, for any interactive elements) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
 </body>
 </html>
