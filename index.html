@@ -3,256 +3,498 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Daily Stock Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
         body {
-            background-color: #f8f9fa;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
         }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
         .dashboard-header {
             text-align: center;
-            margin-bottom: 40px;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin-bottom: 30px;
             color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
         }
-        .kpi-card {
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
-        }
-        .kpi-card:hover {
-            transform: translateY(-5px);
-        }
-        .kpi-value {
+
+        .dashboard-header h1 {
             font-size: 2.5rem;
-            font-weight: bold;
-            margin: 10px 0;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
+
+        .dashboard-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .last-updated {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
         .kpi-icon {
-            font-size: 2rem;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 30px;
+            color: white;
+        }
+
+        .buy .kpi-icon {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .sell .kpi-icon {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .expenditure .kpi-icon {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .kpi-title {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .kpi-value {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #333;
             margin-bottom: 15px;
         }
-        .kpi-buy {
-            border-top: 4px solid #28a745;
+
+        .kpi-change {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
         }
-        .kpi-sell {
-            border-top: 4px solid #dc3545;
+
+        .positive {
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
         }
-        .kpi-expenditure {
-            border-top: 4px solid #ffc107;
+
+        .negative {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
         }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .refresh-btn {
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #667eea;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .refresh-btn:hover {
+            background: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
         .loading {
             display: none;
             text-align: center;
             padding: 20px;
+            color: white;
         }
-        .last-updated {
-            text-align: center;
-            color: #6c757d;
-            font-size: 0.9rem;
-            margin-top: 30px;
+
+        .loading.show {
+            display: block;
         }
-        .refresh-btn {
-            margin-top: 10px;
+
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
         }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         .error-message {
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px auto;
+            max-width: 600px;
             display: none;
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .kpi-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-header h1 {
+                font-size: 2rem;
+            }
+            
+            .kpi-value {
+                font-size: 2.2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="dashboard-container">
         <div class="dashboard-header">
-            <h1><i class="fas fa-chart-line me-2"></i>Daily Stock Dashboard</h1>
-            <p class="mb-0">Real-time tracking of your stock transactions</p>
-        </div>
-
-        <div class="error-message" id="error-message">
-            Error loading data. Please check your Google Sheet sharing settings.
-        </div>
-
-        <div class="text-center loading" id="loading">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2">Fetching data from Google Sheets...</p>
-        </div>
-
-        <div class="row" id="dashboard-content">
-            <div class="col-md-4">
-                <div class="kpi-card kpi-buy">
-                    <div class="kpi-icon text-success">
-                        <i class="fas fa-shopping-cart"></i>
-                    </div>
-                    <h3>Total Buy</h3>
-                    <div class="kpi-value" id="total-buy">$0.00</div>
-                    <p>Total investment in stock purchases</p>
-                    <small class="text-muted">From Buy_Stock sheet</small>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="kpi-card kpi-sell">
-                    <div class="kpi-icon text-danger">
-                        <i class="fas fa-cash-register"></i>
-                    </div>
-                    <h3>Total Sell</h3>
-                    <div class="kpi-value" id="total-sell">$0.00</div>
-                    <p>Total revenue from stock sales</p>
-                    <small class="text-muted">From Sell sheet</small>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="kpi-card kpi-expenditure">
-                    <div class="kpi-icon text-warning">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
-                    <h3>Daily Expenditure</h3>
-                    <div class="kpi-value" id="daily-expenditure">$0.00</div>
-                    <p>Net expenditure (Buy - Sell)</p>
-                    <small class="text-muted">Calculated automatically</small>
-                </div>
+            <h1><i class="fas fa-chart-line"></i> Daily Stock Dashboard</h1>
+            <p>Track your daily stock transactions and expenditures</p>
+            <div class="last-updated">
+                <i class="fas fa-clock"></i> Last Updated: <span id="lastUpdatedTime">Never</span>
             </div>
         </div>
 
-        <div class="text-center refresh-btn">
-            <button class="btn btn-primary" onclick="fetchData()">
-                <i class="fas fa-sync-alt me-2"></i>Refresh Data
-            </button>
-            <button class="btn btn-outline-secondary ms-2" onclick="testUrls()">
-                <i class="fas fa-bug me-2"></i>Test URLs
+        <div class="controls">
+            <button class="refresh-btn" id="refreshBtn">
+                <i class="fas fa-sync-alt"></i> Refresh Data
             </button>
         </div>
 
-        <div class="last-updated" id="last-updated">
-            Last updated: Never
+        <div class="loading" id="loading">
+            <div class="loader"></div>
+            <p>Fetching data from Google Sheets...</p>
         </div>
 
-        <div class="mt-4" id="debug-info" style="display: none; font-size: 0.8rem; color: #666;">
-            <h6>Debug Information:</h6>
-            <div id="url-info"></div>
-            <div id="data-sample"></div>
+        <div class="error-message" id="errorMessage">
+            <p id="errorText"></p>
+        </div>
+
+        <div class="kpi-container">
+            <div class="kpi-card buy">
+                <div class="kpi-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h2 class="kpi-title">Total Buy</h2>
+                <div class="kpi-value" id="totalBuy">$0.00</div>
+                <div class="kpi-change positive" id="buyChange">
+                    <i class="fas fa-arrow-up"></i> <span>0.00%</span>
+                </div>
+            </div>
+
+            <div class="kpi-card sell">
+                <div class="kpi-icon">
+                    <i class="fas fa-cash-register"></i>
+                </div>
+                <h2 class="kpi-title">Total Sell</h2>
+                <div class="kpi-value" id="totalSell">$0.00</div>
+                <div class="kpi-change positive" id="sellChange">
+                    <i class="fas fa-arrow-up"></i> <span>0.00%</span>
+                </div>
+            </div>
+
+            <div class="kpi-card expenditure">
+                <div class="kpi-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <h2 class="kpi-title">Daily Expenditure</h2>
+                <div class="kpi-value" id="dailyExpenditure">$0.00</div>
+                <div class="kpi-change negative" id="expenditureChange">
+                    <i class="fas fa-arrow-down"></i> <span>0.00%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Data sourced from Google Sheets | Auto-refreshes every 5 minutes</p>
+            <p><i class="fas fa-info-circle"></i> Click "Refresh Data" to update manually</p>
         </div>
     </div>
 
     <script>
-       ');
+        // Google Sheets URLs
+        const BUY_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQkIpWAUgoPanUyc3qEyn1ZpsGcYHAStO9-MvJtO-0c8KjfdUllKNhktxg70cHpXw/pub?gid=752590382&single=true&output=csv';
+        const SELL_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQkIpWAUgoPanUyc3qEyn1ZpsGcYHAStO9-MvJtO-0c8KjfdUllKNhktxg70cHpXw/pub?gid=1412337879&single=true&output=csv';
+        
+        // DOM Elements
+        const refreshBtn = document.getElementById('refreshBtn');
+        const loading = document.getElementById('loading');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const lastUpdatedTime = document.getElementById('lastUpdatedTime');
+        
+        // KPI Elements
+        const totalBuyElement = document.getElementById('totalBuy');
+        const totalSellElement = document.getElementById('totalSell');
+        const dailyExpenditureElement = document.getElementById('dailyExpenditure');
+        
+        // Change Elements
+        const buyChangeElement = document.getElementById('buyChange');
+        const sellChangeElement = document.getElementById('sellChange');
+        const expenditureChangeElement = document.getElementById('expenditureChange');
+        
+        // Store previous values for calculating changes
+        let previousValues = {
+            buy: 0,
+            sell: 0,
+            expenditure: 0
+        };
+
+        // Parse CSV data
+        function parseCSV(csvText) {
+            const rows = csvText.split('\n');
+            const headers = rows[0].split(',');
+            
+            const data = [];
+            for (let i = 1; i < rows.length; i++) {
+                if (rows[i].trim() === '') continue;
                 
-                // Try approach 1: Direct CSV export from the first link
-                const csvUrl = GOOGLE_SHEETS.csvExport;
-                console.log('Fetching from CSV URL:', csvUrl);
+                const row = {};
+                const values = rows[i].split(',');
                 
-                const response = await fetch(csvUrl);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const csvText = await response.text();
-                console.log('Raw CSV data (first 500 chars):', csvText.substring(0, 500));
-                
-                // Parse the CSV data
-                const allData = parseCSV(csvText);
-                console.log('Parsed all data:', allData);
-                
-                // Since we get all sheets in one CSV, we need to identify which rows belong to which sheet
-                // Let's assume the CSV includes all data and we need to filter/sum based on column names
-                
-                let totalBuy = 0;
-                let totalSell = 0;
-                
-                // Look for buy and sell columns in the data
-                allData.forEach(row => {
-                    // Check for buy-related columns
-                    if (row.Total_Cost_Buy || row['Total Cost Buy'] || row.total_cost_buy) {
-                        const buyAmount = parseFloat((row.Total_Cost_Buy || row['Total Cost Buy'] || row.total_cost_buy || '0').replace(/[^0-9.-]+/g, ''));
-                        if (!isNaN(buyAmount)) totalBuy += buyAmount;
+                for (let j = 0; j < headers.length; j++) {
+                    let header = headers[j].trim().replace(/"/g, '');
+                    let value = values[j] ? values[j].trim().replace(/"/g, '') : '';
+                    
+                    // Try to convert to number if possible
+                    if (!isNaN(value) && value !== '') {
+                        value = parseFloat(value);
                     }
                     
-                    // Check for sell-related columns
-                    if (row.Total_Cost_Sell || row['Total Cost Sell'] || row.total_cost_sell) {
-                        const sellAmount = parseFloat((row.Total_Cost_Sell || row['Total Cost Sell'] || row.total_cost_sell || '0').replace(/[^0-9.-]+/g, ''));
-                        if (!isNaN(sellAmount)) totalSell += sellAmount;
-                    }
-                });
-                
-                // If no data found, try alternative column names
-                if (totalBuy === 0 && totalSell === 0) {
-                    // Try summing all numeric columns as fallback
-                    allData.forEach(row => {
-                        Object.keys(row).forEach(key => {
-                            const value = row[key];
-                            const numValue = parseFloat(value.replace(/[^0-9.-]+/g, ''));
-                            if (!isNaN(numValue)) {
-                                // Heuristic: if column name contains "buy", add to buy total
-                                if (key.toLowerCase().includes('buy')) {
-                                    totalBuy += numValue;
-                                }
-                                // If column name contains "sell", add to sell total
-                                if (key.toLowerCase().includes('sell')) {
-                                    totalSell += numValue;
-                                }
-                            }
-                        });
-                    });
+                    row[header] = value;
                 }
                 
-                console.log('Calculated totals - Buy:', totalBuy, 'Sell:', totalSell);
-                
-                // Calculate daily expenditure
-                const dailyExpenditure = totalBuy - totalSell;
-                
-                // Update UI
-                document.getElementById('total-buy').textContent = formatCurrency(totalBuy);
-                document.getElementById('total-sell').textContent = formatCurrency(totalSell);
-                document.getElementById('daily-expenditure').textContent = formatCurrency(dailyExpenditure);
-                
-                // Update last updated time
-                const now = new Date();
-                document.getElementById('last-updated').innerHTML = 
-                    `Last updated: ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} | ${now.toLocaleDateString()}`;
-                
-                // Show data sample for debugging
-                if (allData.length > 0) {
-                    document.getElementById('data-sample').innerHTML = 
-                        `<strong>First row of data:</strong><br><pre>${JSON.stringify(allData[0], null, 2)}</pre>`;
+                data.push(row);
+            }
+            
+            return data;
+        }
+
+        // Calculate sum from column
+        function calculateSum(data, columnName) {
+            let sum = 0;
+            for (const row of data) {
+                const value = parseFloat(row[columnName]);
+                if (!isNaN(value)) {
+                    sum += value;
                 }
+            }
+            return sum;
+        }
+
+        // Format currency
+        function formatCurrency(value) {
+            return '$' + value.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        // Calculate percentage change
+        function calculatePercentageChange(current, previous) {
+            if (previous === 0) return 0;
+            return ((current - previous) / previous) * 100;
+        }
+
+        // Format percentage
+        function formatPercentage(value) {
+            return Math.abs(value).toFixed(2) + '%';
+        }
+
+        // Update KPI card with animation
+        function updateKPI(element, value, isCurrency = true) {
+            const currentValue = parseFloat(element.textContent.replace(/[^0-9.-]+/g, '')) || 0;
+            const targetValue = value;
+            const duration = 1000; // 1 second
+            const steps = 60;
+            const stepValue = (targetValue - currentValue) / steps;
+            let currentStep = 0;
+            
+            const timer = setInterval(() => {
+                currentStep++;
+                const displayValue = currentValue + (stepValue * currentStep);
                 
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                document.getElementById('error-message').style.display = 'block';
-                document.getElementById('error-message').innerHTML = 
-                    `Error loading data: ${error.message}<br>Please ensure your Google Sheet is published to the web.`;
-            } finally {
-                // Hide loading
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('dashboard-content').style.opacity = '1';
+                if (currentStep >= steps) {
+                    element.textContent = isCurrency ? formatCurrency(targetValue) : targetValue;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = isCurrency ? formatCurrency(displayValue) : displayValue.toFixed(2);
+                }
+            }, duration / steps);
+        }
+
+        // Update change indicator
+        function updateChangeIndicator(element, change) {
+            const icon = element.querySelector('i');
+            const span = element.querySelector('span');
+            
+            if (change > 0) {
+                element.className = 'kpi-change positive';
+                icon.className = 'fas fa-arrow-up';
+                span.textContent = formatPercentage(change);
+            } else if (change < 0) {
+                element.className = 'kpi-change negative';
+                icon.className = 'fas fa-arrow-down';
+                span.textContent = formatPercentage(change);
+            } else {
+                element.className = 'kpi-change positive';
+                icon.className = 'fas fa-minus';
+                span.textContent = '0.00%';
             }
         }
 
-        // Initialize dashboard on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Dashboard initialized');
+        // Fetch data from Google Sheets
+        async function fetchData() {
+            try {
+                loading.classList.add('show');
+                errorMessage.classList.remove('show');
+                
+                // Fetch buy data
+                const buyResponse = await fetch(BUY_SHEET_URL);
+                if (!buyResponse.ok) throw new Error(`Failed to fetch buy data: ${buyResponse.status}`);
+                const buyCSV = await buyResponse.text();
+                const buyData = parseCSV(buyCSV);
+                
+                // Fetch sell data
+                const sellResponse = await fetch(SELL_SHEET_URL);
+                if (!sellResponse.ok) throw new Error(`Failed to fetch sell data: ${sellResponse.status}`);
+                const sellCSV = await sellResponse.text();
+                const sellData = parseCSV(sellCSV);
+                
+                // Calculate sums
+                const buySum = calculateSum(buyData, 'Total_Cost_Buy');
+                const sellSum = calculateSum(sellData, 'Total_Cost_Sell');
+                const expenditure = buySum - sellSum;
+                
+                // Calculate changes
+                const buyChange = calculatePercentageChange(buySum, previousValues.buy);
+                const sellChange = calculatePercentageChange(sellSum, previousValues.sell);
+                const expenditureChange = calculatePercentageChange(expenditure, previousValues.expenditure);
+                
+                // Update UI
+                updateKPI(totalBuyElement, buySum);
+                updateKPI(totalSellElement, sellSum);
+                updateKPI(dailyExpenditureElement, expenditure);
+                
+                updateChangeIndicator(buyChangeElement, buyChange);
+                updateChangeIndicator(sellChangeElement, sellChange);
+                updateChangeIndicator(expenditureChangeElement, expenditureChange);
+                
+                // Store current values as previous for next time
+                previousValues.buy = buySum;
+                previousValues.sell = sellSum;
+                previousValues.expenditure = expenditure;
+                
+                // Update timestamp
+                const now = new Date();
+                lastUpdatedTime.textContent = now.toLocaleTimeString();
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                errorText.textContent = `Error: ${error.message}. Please check your internet connection and try again.`;
+                errorMessage.classList.add('show');
+            } finally {
+                loading.classList.remove('show');
+            }
+        }
+
+        // Auto-refresh every 5 minutes
+        function startAutoRefresh() {
+            setInterval(fetchData, 5 * 60 * 1000); // 5 minutes
+        }
+
+        // Event Listeners
+        refreshBtn.addEventListener('click', fetchData);
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', () => {
             fetchData();
-            
-            // Auto-refresh every 2 minutes
-            setInterval(fetchData, 2 * 60 * 1000);
+            startAutoRefresh();
         });
     </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
