@@ -57,11 +57,6 @@
             background: linear-gradient(135deg, #ffffff, #fef9e7);
         }
         
-        .kpi-card.profit {
-            border-top: 4px solid var(--secondary-color);
-            background: linear-gradient(135deg, #ffffff, #e8f4fc);
-        }
-        
         .kpi-icon {
             font-size: 2.5rem;
             margin-bottom: 1rem;
@@ -163,7 +158,7 @@
         <!-- KPI Cards -->
         <div id="dashboardContent" style="display: none;">
             <div class="row">
-                <div class="col-md-3 col-sm-6">
+                <div class="col-md-4 col-sm-6">
                     <div class="kpi-card buy">
                         <div class="kpi-icon text-success">
                             <i class="fas fa-shopping-cart"></i>
@@ -174,7 +169,7 @@
                     </div>
                 </div>
                 
-                <div class="col-md-3 col-sm-6">
+                <div class="col-md-4 col-sm-6">
                     <div class="kpi-card sell">
                         <div class="kpi-icon text-danger">
                             <i class="fas fa-cash-register"></i>
@@ -185,7 +180,7 @@
                     </div>
                 </div>
                 
-                <div class="col-md-3 col-sm-6">
+                <div class="col-md-4 col-sm-6">
                     <div class="kpi-card expense">
                         <div class="kpi-icon text-warning">
                             <i class="fas fa-wallet"></i>
@@ -195,17 +190,6 @@
                         <small class="text-muted">Other operational expenses</small>
                     </div>
                 </div>
-                
-                <div class="col-md-3 col-sm-6">
-                    <div class="kpi-card profit">
-                        <div class="kpi-icon text-primary">
-                            <i class="fas fa-chart-bar"></i>
-                        </div>
-                        <div class="kpi-value text-primary" id="netProfit">₹0</div>
-                        <div class="kpi-label">Net Profit/Loss</div>
-                        <small class="text-muted">Sell - Buy - Expenses</small>
-                    </div>
-                </div>
             </div>
 
             <!-- Summary Card -->
@@ -213,32 +197,50 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header bg-light">
-                            <h5 class="mb-0"><i class="fas fa-info-circle"></i> Dashboard Summary</h5>
+                            <h5 class="mb-0"><i class="fas fa-info-circle"></i> Transaction Summary</h5>
                         </div>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-4">
-                                    <h6>Transaction Summary</h6>
+                                    <h6><i class="fas fa-shopping-cart text-success me-2"></i>Buy Transactions</h6>
                                     <ul class="list-unstyled">
-                                        <li><i class="fas fa-arrow-up text-success"></i> Total Investment: <span id="summaryBuy" class="fw-bold">₹0</span></li>
-                                        <li><i class="fas fa-arrow-down text-danger"></i> Total Revenue: <span id="summarySell" class="fw-bold">₹0</span></li>
-                                        <li><i class="fas fa-money-bill-wave text-warning"></i> Expenses: <span id="summaryExpense" class="fw-bold">₹0</span></li>
+                                        <li>Total Amount: <span id="summaryBuy" class="fw-bold text-success">₹0</span></li>
+                                        <li>Data Source: Buy_Stock worksheet</li>
+                                        <li>Column: Total_Cost_Buy</li>
                                     </ul>
                                 </div>
                                 <div class="col-md-4">
-                                    <h6>Performance Metrics</h6>
+                                    <h6><i class="fas fa-cash-register text-danger me-2"></i>Sell Transactions</h6>
                                     <ul class="list-unstyled">
-                                        <li><i class="fas fa-balance-scale text-primary"></i> Net Profit/Loss: <span id="summaryNet" class="fw-bold">₹0</span></li>
-                                        <li><i class="fas fa-percentage text-info"></i> Profit Margin: <span id="profitMargin" class="fw-bold">0%</span></li>
+                                        <li>Total Amount: <span id="summarySell" class="fw-bold text-danger">₹0</span></li>
+                                        <li>Data Source: Sell worksheet</li>
+                                        <li>Column: Total_Cost_Sell</li>
                                     </ul>
                                 </div>
                                 <div class="col-md-4">
-                                    <h6>Data Status</h6>
+                                    <h6><i class="fas fa-wallet text-warning me-2"></i>Other Expenditures</h6>
                                     <ul class="list-unstyled">
-                                        <li><i class="fas fa-database"></i> Data Source: Google Sheets</li>
-                                        <li><i class="fas fa-clock"></i> Last Updated: <span id="summaryUpdated">Just now</span></li>
-                                        <li><i class="fas fa-check-circle text-success"></i> Status: <span id="dataStatus">Live</span></li>
+                                        <li>Total Amount: <span id="summaryExpense" class="fw-bold text-warning">₹0</span></li>
+                                        <li>Data Source: Other_Expenditure worksheet</li>
+                                        <li>Column: Total_Cost_Other</li>
                                     </ul>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <h6><i class="fas fa-database me-2"></i>Data Status</h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="me-3"><i class="fas fa-clock"></i> Last Updated: <span id="summaryUpdated">Just now</span></span>
+                                            <span><i class="fas fa-check-circle text-success"></i> Status: <span id="dataStatus">Live</span></span>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted">Auto-refreshes every 5 minutes</small>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -348,39 +350,15 @@
 
         // Update the dashboard with new data
         function updateDashboard(buyTotal, sellTotal, expenseTotal) {
-            // Calculate net profit/loss
-            const netProfit = sellTotal - buyTotal - expenseTotal;
-            
-            // Calculate profit margin (avoid division by zero)
-            const profitMargin = sellTotal > 0 ? ((netProfit / sellTotal) * 100).toFixed(1) : 0;
-            
             // Update KPI cards
             document.getElementById('totalBuy').textContent = formatCurrency(buyTotal);
             document.getElementById('totalSell').textContent = formatCurrency(sellTotal);
             document.getElementById('dailyExpenditure').textContent = formatCurrency(expenseTotal);
-            document.getElementById('netProfit').textContent = formatCurrency(netProfit);
             
             // Update summary section
             document.getElementById('summaryBuy').textContent = formatCurrency(buyTotal);
             document.getElementById('summarySell').textContent = formatCurrency(sellTotal);
             document.getElementById('summaryExpense').textContent = formatCurrency(expenseTotal);
-            document.getElementById('summaryNet').textContent = formatCurrency(netProfit);
-            document.getElementById('profitMargin').textContent = `${profitMargin}%`;
-            
-            // Color code net profit
-            const netElement = document.getElementById('netProfit');
-            const summaryNet = document.getElementById('summaryNet');
-            
-            if (netProfit > 0) {
-                netElement.className = 'kpi-value text-success';
-                summaryNet.className = 'fw-bold text-success';
-            } else if (netProfit < 0) {
-                netElement.className = 'kpi-value text-danger';
-                summaryNet.className = 'fw-bold text-danger';
-            } else {
-                netElement.className = 'kpi-value text-secondary';
-                summaryNet.className = 'fw-bold text-secondary';
-            }
             
             // Update last updated time
             const now = new Date();
