@@ -158,36 +158,36 @@
         <!-- KPI Cards -->
         <div id="dashboardContent" style="display: none;">
             <div class="row">
-                <div class="col-md-4 col-sm-6">
+                <div class="col-md-4 col-sm-12 mb-3">
                     <div class="kpi-card buy">
                         <div class="kpi-icon text-success">
                             <i class="fas fa-shopping-cart"></i>
                         </div>
                         <div class="kpi-value text-success" id="totalBuy">₹0</div>
                         <div class="kpi-label">Total Buy</div>
-                        <small class="text-muted">Sum of all stock purchases</small>
+                        <small class="text-muted">Sum of all stock purchases from Buy_Stock worksheet</small>
                     </div>
                 </div>
                 
-                <div class="col-md-4 col-sm-6">
+                <div class="col-md-4 col-sm-12 mb-3">
                     <div class="kpi-card sell">
                         <div class="kpi-icon text-danger">
                             <i class="fas fa-cash-register"></i>
                         </div>
                         <div class="kpi-value text-danger" id="totalSell">₹0</div>
                         <div class="kpi-label">Total Sell</div>
-                        <small class="text-muted">Sum of all stock sales</small>
+                        <small class="text-muted">Sum of all stock sales from Sell worksheet</small>
                     </div>
                 </div>
                 
-                <div class="col-md-4 col-sm-6">
+                <div class="col-md-4 col-sm-12 mb-3">
                     <div class="kpi-card expense">
                         <div class="kpi-icon text-warning">
                             <i class="fas fa-wallet"></i>
                         </div>
                         <div class="kpi-value text-warning" id="dailyExpenditure">₹0</div>
                         <div class="kpi-label">Daily Expenditure</div>
-                        <small class="text-muted">Other operational expenses</small>
+                        <small class="text-muted">Sum of other expenses from Other_Expenditure worksheet</small>
                     </div>
                 </div>
             </div>
@@ -205,7 +205,7 @@
                                     <h6><i class="fas fa-shopping-cart text-success me-2"></i>Buy Transactions</h6>
                                     <ul class="list-unstyled">
                                         <li>Total Amount: <span id="summaryBuy" class="fw-bold text-success">₹0</span></li>
-                                        <li>Data Source: Buy_Stock worksheet</li>
+                                        <li>Worksheet: Buy_Stock</li>
                                         <li>Column: Total_Cost_Buy</li>
                                     </ul>
                                 </div>
@@ -213,7 +213,7 @@
                                     <h6><i class="fas fa-cash-register text-danger me-2"></i>Sell Transactions</h6>
                                     <ul class="list-unstyled">
                                         <li>Total Amount: <span id="summarySell" class="fw-bold text-danger">₹0</span></li>
-                                        <li>Data Source: Sell worksheet</li>
+                                        <li>Worksheet: Sell</li>
                                         <li>Column: Total_Cost_Sell</li>
                                     </ul>
                                 </div>
@@ -221,7 +221,7 @@
                                     <h6><i class="fas fa-wallet text-warning me-2"></i>Other Expenditures</h6>
                                     <ul class="list-unstyled">
                                         <li>Total Amount: <span id="summaryExpense" class="fw-bold text-warning">₹0</span></li>
-                                        <li>Data Source: Other_Expenditure worksheet</li>
+                                        <li>Worksheet: Other_Expenditure</li>
                                         <li>Column: Total_Cost_Other</li>
                                     </ul>
                                 </div>
