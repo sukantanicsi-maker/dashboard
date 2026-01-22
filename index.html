@@ -13,7 +13,7 @@
             --success-color: #27ae60;
             --danger-color: #e74c3c;
             --warning-color: #f39c12;
-            --light-color: #ecf0f1;
+            --info-color: #17a2b8;
         }
         
         body {
@@ -57,13 +57,18 @@
             background: linear-gradient(135deg, #ffffff, #fef9e7);
         }
         
+        .kpi-card.info {
+            border-top: 4px solid var(--info-color);
+            background: linear-gradient(135deg, #ffffff, #e8f4fc);
+        }
+        
         .kpi-icon {
             font-size: 2.5rem;
             margin-bottom: 1rem;
         }
         
         .kpi-value {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: bold;
             margin: 0.5rem 0;
         }
@@ -123,17 +128,55 @@
             margin: 1rem 0;
             border-radius: 5px;
         }
+        
+        .filter-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .dropdown-menu {
+            min-width: 200px;
+        }
+        
+        .dropdown-item.active {
+            background-color: var(--secondary-color);
+        }
+        
+        .time-period-section {
+            display: none;
+        }
+        
+        .time-period-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .period-badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
     <div class="dashboard-header">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-md-8">
+                <div class="col-md-6">
                     <h1><i class="fas fa-chart-line"></i> Daily Stock Dashboard</h1>
                     <p class="lead mb-0">Real-time tracking of your stock transactions and expenditures</p>
                 </div>
-                <div class="col-md-4 text-md-end">
+                <div class="col-md-6 text-md-end">
                     <div class="last-updated" id="lastUpdated">
                         Last updated: Loading...
                     </div>
@@ -155,39 +198,227 @@
         <!-- Error Display -->
         <div id="errorContainer" style="display: none;"></div>
 
-        <!-- KPI Cards -->
+        <!-- Dashboard Content -->
         <div id="dashboardContent" style="display: none;">
-            <div class="row">
-                <div class="col-md-4 col-sm-12 mb-3">
-                    <div class="kpi-card buy">
-                        <div class="kpi-icon text-success">
-                            <i class="fas fa-shopping-cart"></i>
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h5 class="mb-0"><i class="fas fa-filter"></i> View Time Period Analysis</h5>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="timePeriodDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-calendar-alt"></i> Select Analysis Type
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="timePeriodDropdown">
+                                <li><a class="dropdown-item" href="#" onclick="showMainDashboard()">Main Dashboard</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" onclick="showTimeAnalysis('buy')">Buy Time Analysis</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="showTimeAnalysis('sell')">Sell Time Analysis</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="showTimeAnalysis('expenditure')">Expenditure Time Analysis</a></li>
+                            </ul>
                         </div>
-                        <div class="kpi-value text-success" id="totalBuy">₹0</div>
-                        <div class="kpi-label">Total Buy</div>
-                        <small class="text-muted">Sum of all stock purchases from Buy_Stock worksheet</small>
                     </div>
                 </div>
-                
-                <div class="col-md-4 col-sm-12 mb-3">
-                    <div class="kpi-card sell">
-                        <div class="kpi-icon text-danger">
-                            <i class="fas fa-cash-register"></i>
+            </div>
+
+            <!-- Main Dashboard (Default View) -->
+            <div id="mainDashboard" class="time-period-section active">
+                <div class="row">
+                    <div class="col-md-4 col-sm-12 mb-3">
+                        <div class="kpi-card buy">
+                            <div class="kpi-icon text-success">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="kpi-value text-success" id="totalBuy">₹0</div>
+                            <div class="kpi-label">Total Buy</div>
+                            <small class="text-muted">Sum of all stock purchases from Buy_Stock worksheet</small>
                         </div>
-                        <div class="kpi-value text-danger" id="totalSell">₹0</div>
-                        <div class="kpi-label">Total Sell</div>
-                        <small class="text-muted">Sum of all stock sales from Sell worksheet</small>
+                    </div>
+                    
+                    <div class="col-md-4 col-sm-12 mb-3">
+                        <div class="kpi-card sell">
+                            <div class="kpi-icon text-danger">
+                                <i class="fas fa-cash-register"></i>
+                            </div>
+                            <div class="kpi-value text-danger" id="totalSell">₹0</div>
+                            <div class="kpi-label">Total Sell</div>
+                            <small class="text-muted">Sum of all stock sales from Sell worksheet</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 col-sm-12 mb-3">
+                        <div class="kpi-card expense">
+                            <div class="kpi-icon text-warning">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div class="kpi-value text-warning" id="dailyExpenditure">₹0</div>
+                            <div class="kpi-label">Daily Expenditure</div>
+                            <small class="text-muted">Sum of other expenses from Other_Expenditure worksheet</small>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="col-md-4 col-sm-12 mb-3">
-                    <div class="kpi-card expense">
-                        <div class="kpi-icon text-warning">
-                            <i class="fas fa-wallet"></i>
+            </div>
+
+            <!-- Buy Time Analysis -->
+            <div id="buyTimeAnalysis" class="time-period-section">
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-shopping-cart"></i> Buy Time Period Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 col-sm-12 mb-3">
+                                <div class="kpi-card info">
+                                    <div class="kpi-icon text-info">
+                                        <i class="fas fa-calendar-day"></i>
+                                    </div>
+                                    <div class="kpi-value text-info" id="lastDateBuy">₹0</div>
+                                    <div class="kpi-label">Last Date Total Buy</div>
+                                    <small class="text-muted">Total buy amount from the most recent date</small>
+                                    <div class="mt-2">
+                                        <span class="period-badge" id="lastDateBadge">Date: --</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 col-sm-12 mb-3">
+                                <div class="kpi-card info">
+                                    <div class="kpi-icon text-info">
+                                        <i class="fas fa-calendar-week"></i>
+                                    </div>
+                                    <div class="kpi-value text-info" id="lastWeekBuy">₹0</div>
+                                    <div class="kpi-label">Last Week Total Buy</div>
+                                    <small class="text-muted">Total buy amount from the last 7 days</small>
+                                    <div class="mt-2">
+                                        <span class="period-badge" id="lastWeekBadge">7 Days</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 col-sm-12 mb-3">
+                                <div class="kpi-card info">
+                                    <div class="kpi-icon text-info">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </div>
+                                    <div class="kpi-value text-info" id="lastMonthBuy">₹0</div>
+                                    <div class="kpi-label">Last Month Total Buy</div>
+                                    <small class="text-muted">Total buy amount from the last 30 days</small>
+                                    <div class="mt-2">
+                                        <span class="period-badge" id="lastMonthBadge">30 Days</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="kpi-value text-warning" id="dailyExpenditure">₹0</div>
-                        <div class="kpi-label">Daily Expenditure</div>
-                        <small class="text-muted">Sum of other expenses from Other_Expenditure worksheet</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sell Time Analysis -->
+            <div id="sellTimeAnalysis" class="time-period-section">
+                <div class="card mb-4">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="fas fa-cash-register"></i> Sell Time Period Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 col-sm-12 mb-3">
+                                <div class="kpi-card info">
+                                    <div class="kpi-icon text-info">
+                                        <i class="fas fa-calendar-day"></i>
+                                    </div>
+                                    <div class="kpi-value text-info" id="lastDateSell">₹0</div>
+                                    <div class="kpi-label">Last Date Total Sell</div>
+                                    <small class="text-muted">Total sell amount from the most recent date</small>
+                                    <div class="mt-2">
+                                        <span class="period-badge" id="lastDateSellBadge">Date: --</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 col-sm-12 mb-3">
+                                <div class="kpi-card info">
+                                    <div class="kpi-icon text-info">
+                                        <i class="fas fa-calendar-week"></i>
+                                    </div>
+                                    <div class="kpi-value text-info" id="lastWeekSell">₹0</div>
+                                    <div class="kpi-label">Last Week Total Sell</div>
+                                    <small class="text-muted">Total sell amount from the last 7 days</small>
+                                    <div class="mt-2">
+                                        <span class="period-badge" id="lastWeekSellBadge">7 Days</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 col-sm-12 mb-3">
+                                <div class="kpi-card info">
+                                    <div class="kpi-icon text-info">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </div>
+                                    <div class="kpi-value text-info" id="lastMonthSell">₹0</div>
+                                    <div class="kpi-label">Last Month Total Sell</div>
+                                    <small class="text-muted">Total sell amount from the last 30 days</small>
+                                    <div class="mt-2">
+                                        <span class="period-badge" id="lastMonthSellBadge">30 Days</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expenditure Time Analysis -->
+            <div id="expenditureTimeAnalysis" class="time-period-section">
+                <div class="card mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-wallet"></i> Expenditure Time Period Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 col-sm-12 mb-3">
+                                <div class="kpi-card info">
+                                    <div class="kpi-icon text-info">
+                                        <i class="fas fa-calendar-day"></i>
+                                    </div>
+                                    <div class="kpi-value text-info" id="lastDateExpense">₹0</div>
+                                    <div class="kpi-label">Last Date Total Expenditure</div>
+                                    <small class="text-muted">Total expenditure from the most recent date</small>
+                                    <div class="mt-2">
+                                        <span class="period-badge" id="lastDateExpenseBadge">Date: --</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 col-sm-12 mb-3">
+                                <div class="kpi-card info">
+                                    <div class="kpi-icon text-info">
+                                        <i class="fas fa-calendar-week"></i>
+                                    </div>
+                                    <div class="kpi-value text-info" id="lastWeekExpense">₹0</div>
+                                    <div class="kpi-label">Last Week Total Expenditure</div>
+                                    <small class="text-muted">Total expenditure from the last 7 days</small>
+                                    <div class="mt-2">
+                                        <span class="period-badge" id="lastWeekExpenseBadge">7 Days</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 col-sm-12 mb-3">
+                                <div class="kpi-card info">
+                                    <div class="kpi-icon text-info">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </div>
+                                    <div class="kpi-value text-info" id="lastMonthExpense">₹0</div>
+                                    <div class="kpi-label">Last Month Total Expenditure</div>
+                                    <small class="text-muted">Total expenditure from the last 30 days</small>
+                                    <div class="mt-2">
+                                        <span class="period-badge" id="lastMonthExpenseBadge">30 Days</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -197,32 +428,32 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header bg-light">
-                            <h5 class="mb-0"><i class="fas fa-info-circle"></i> Transaction Summary</h5>
+                            <h5 class="mb-0"><i class="fas fa-info-circle"></i> Data Summary</h5>
                         </div>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-4">
-                                    <h6><i class="fas fa-shopping-cart text-success me-2"></i>Buy Transactions</h6>
+                                    <h6><i class="fas fa-shopping-cart text-success me-2"></i>Buy Data</h6>
                                     <ul class="list-unstyled">
-                                        <li>Total Amount: <span id="summaryBuy" class="fw-bold text-success">₹0</span></li>
-                                        <li>Worksheet: Buy_Stock</li>
-                                        <li>Column: Total_Cost_Buy</li>
+                                        <li>Total Records: <span id="buyRecordCount" class="fw-bold">0</span></li>
+                                        <li>Date Range: <span id="buyDateRange" class="fw-bold">--</span></li>
+                                        <li>Last Updated: <span id="buyLastDate" class="fw-bold">--</span></li>
                                     </ul>
                                 </div>
                                 <div class="col-md-4">
-                                    <h6><i class="fas fa-cash-register text-danger me-2"></i>Sell Transactions</h6>
+                                    <h6><i class="fas fa-cash-register text-danger me-2"></i>Sell Data</h6>
                                     <ul class="list-unstyled">
-                                        <li>Total Amount: <span id="summarySell" class="fw-bold text-danger">₹0</span></li>
-                                        <li>Worksheet: Sell</li>
-                                        <li>Column: Total_Cost_Sell</li>
+                                        <li>Total Records: <span id="sellRecordCount" class="fw-bold">0</span></li>
+                                        <li>Date Range: <span id="sellDateRange" class="fw-bold">--</span></li>
+                                        <li>Last Updated: <span id="sellLastDate" class="fw-bold">--</span></li>
                                     </ul>
                                 </div>
                                 <div class="col-md-4">
-                                    <h6><i class="fas fa-wallet text-warning me-2"></i>Other Expenditures</h6>
+                                    <h6><i class="fas fa-wallet text-warning me-2"></i>Expenditure Data</h6>
                                     <ul class="list-unstyled">
-                                        <li>Total Amount: <span id="summaryExpense" class="fw-bold text-warning">₹0</span></li>
-                                        <li>Worksheet: Other_Expenditure</li>
-                                        <li>Column: Total_Cost_Other</li>
+                                        <li>Total Records: <span id="expenseRecordCount" class="fw-bold">0</span></li>
+                                        <li>Date Range: <span id="expenseDateRange" class="fw-bold">--</span></li>
+                                        <li>Last Updated: <span id="expenseLastDate" class="fw-bold">--</span></li>
                                     </ul>
                                 </div>
                             </div>
@@ -231,10 +462,10 @@
                             
                             <div class="row mt-3">
                                 <div class="col-md-12">
-                                    <h6><i class="fas fa-database me-2"></i>Data Status</h6>
+                                    <h6><i class="fas fa-database me-2"></i>System Status</h6>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
-                                            <span class="me-3"><i class="fas fa-clock"></i> Last Updated: <span id="summaryUpdated">Just now</span></span>
+                                            <span class="me-3"><i class="fas fa-clock"></i> Last Refresh: <span id="summaryUpdated">Just now</span></span>
                                             <span><i class="fas fa-check-circle text-success"></i> Status: <span id="dataStatus">Live</span></span>
                                         </div>
                                         <div>
@@ -250,21 +481,32 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Google Sheets URLs
         const SHEETS_CONFIG = {
             buy: {
                 url: 'https://docs.google.com/spreadsheets/d/12yHqIhFQZyEwYJlmBfscDmaXZpp2lXQK/gviz/tq?tqx=out:csv&gid=752590382',
-                column: 'Total_Cost_Buy'
+                column: 'Total_Cost_Buy',
+                dateColumn: 'Date'
             },
             sell: {
                 url: 'https://docs.google.com/spreadsheets/d/12yHqIhFQZyEwYJlmBfscDmaXZpp2lXQK/gviz/tq?tqx=out:csv&gid=1412337879',
-                column: 'Total_Cost_Sell'
+                column: 'Total_Cost_Sell',
+                dateColumn: 'Date'
             },
             expense: {
                 url: 'https://docs.google.com/spreadsheets/d/12yHqIhFQZyEwYJlmBfscDmaXZpp2lXQK/gviz/tq?tqx=out:csv&gid=1557222749',
-                column: 'Total_Cost_Other'
+                column: 'Total_Cost_Other',
+                dateColumn: 'Date'
             }
+        };
+
+        // Store data globally
+        let dashboardData = {
+            buy: [],
+            sell: [],
+            expense: []
         };
 
         // Format currency in Indian Rupees
@@ -293,11 +535,6 @@
                     let value = currentline[index] || '';
                     value = value.trim().replace(/"/g, '');
                     
-                    // Try to convert to number if it's a numeric value
-                    if (!isNaN(value) && value !== '') {
-                        value = parseFloat(value);
-                    }
-                    
                     obj[header] = value;
                 });
                 
@@ -313,6 +550,74 @@
                 const value = parseFloat(row[columnName]) || 0;
                 return sum + value;
             }, 0);
+        }
+
+        // Calculate time period sums
+        function calculateTimePeriodSums(data, amountColumn, dateColumn) {
+            const now = new Date();
+            const oneDayAgo = new Date(now);
+            oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+            
+            const oneWeekAgo = new Date(now);
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            
+            const oneMonthAgo = new Date(now);
+            oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
+            
+            let lastDateTotal = 0;
+            let lastWeekTotal = 0;
+            let lastMonthTotal = 0;
+            let lastDate = null;
+            let lastDateStr = '--';
+            
+            // Find the most recent date
+            const dates = data.map(row => {
+                const dateStr = row[dateColumn];
+                if (dateStr && dateStr.trim()) {
+                    return new Date(dateStr);
+                }
+                return null;
+            }).filter(date => date !== null);
+            
+            if (dates.length > 0) {
+                const latestDate = new Date(Math.max(...dates));
+                lastDate = latestDate;
+                lastDateStr = latestDate.toLocaleDateString();
+                
+                // Calculate last date total
+                lastDateTotal = data.reduce((sum, row) => {
+                    const rowDate = row[dateColumn] ? new Date(row[dateColumn]) : null;
+                    const amount = parseFloat(row[amountColumn]) || 0;
+                    
+                    if (rowDate && rowDate.toDateString() === latestDate.toDateString()) {
+                        return sum + amount;
+                    }
+                    return sum;
+                }, 0);
+            }
+            
+            // Calculate last week and last month totals
+            data.forEach(row => {
+                const rowDate = row[dateColumn] ? new Date(row[dateColumn]) : null;
+                const amount = parseFloat(row[amountColumn]) || 0;
+                
+                if (rowDate) {
+                    if (rowDate >= oneWeekAgo) {
+                        lastWeekTotal += amount;
+                    }
+                    if (rowDate >= oneMonthAgo) {
+                        lastMonthTotal += amount;
+                    }
+                }
+            });
+            
+            return {
+                lastDateTotal,
+                lastWeekTotal,
+                lastMonthTotal,
+                lastDate: lastDateStr,
+                lastActualDate: lastDate
+            };
         }
 
         // Fetch data from Google Sheets
@@ -348,17 +653,83 @@
             errorContainer.style.display = 'block';
         }
 
+        // Show main dashboard
+        function showMainDashboard() {
+            document.getElementById('mainDashboard').classList.add('active');
+            document.getElementById('buyTimeAnalysis').classList.remove('active');
+            document.getElementById('sellTimeAnalysis').classList.remove('active');
+            document.getElementById('expenditureTimeAnalysis').classList.remove('active');
+            
+            // Update dropdown text
+            document.getElementById('timePeriodDropdown').innerHTML = 
+                '<i class="fas fa-calendar-alt"></i> Select Analysis Type';
+        }
+
+        // Show time analysis
+        function showTimeAnalysis(type) {
+            document.getElementById('mainDashboard').classList.remove('active');
+            document.getElementById('buyTimeAnalysis').classList.remove('active');
+            document.getElementById('sellTimeAnalysis').classList.remove('active');
+            document.getElementById('expenditureTimeAnalysis').classList.remove('active');
+            
+            if (type === 'buy') {
+                document.getElementById('buyTimeAnalysis').classList.add('active');
+                document.getElementById('timePeriodDropdown').innerHTML = 
+                    '<i class="fas fa-shopping-cart"></i> Buy Analysis';
+            } else if (type === 'sell') {
+                document.getElementById('sellTimeAnalysis').classList.add('active');
+                document.getElementById('timePeriodDropdown').innerHTML = 
+                    '<i class="fas fa-cash-register"></i> Sell Analysis';
+            } else if (type === 'expenditure') {
+                document.getElementById('expenditureTimeAnalysis').classList.add('active');
+                document.getElementById('timePeriodDropdown').innerHTML = 
+                    '<i class="fas fa-wallet"></i> Expenditure Analysis';
+            }
+        }
+
         // Update the dashboard with new data
-        function updateDashboard(buyTotal, sellTotal, expenseTotal) {
-            // Update KPI cards
+        function updateDashboard() {
+            // Calculate totals
+            const buyTotal = calculateSum(dashboardData.buy, SHEETS_CONFIG.buy.column);
+            const sellTotal = calculateSum(dashboardData.sell, SHEETS_CONFIG.sell.column);
+            const expenseTotal = calculateSum(dashboardData.expense, SHEETS_CONFIG.expense.column);
+            
+            // Calculate time period totals
+            const buyTimeData = calculateTimePeriodSums(dashboardData.buy, SHEETS_CONFIG.buy.column, SHEETS_CONFIG.buy.dateColumn);
+            const sellTimeData = calculateTimePeriodSums(dashboardData.sell, SHEETS_CONFIG.sell.column, SHEETS_CONFIG.sell.dateColumn);
+            const expenseTimeData = calculateTimePeriodSums(dashboardData.expense, SHEETS_CONFIG.expense.column, SHEETS_CONFIG.expense.dateColumn);
+            
+            // Update main KPI cards
             document.getElementById('totalBuy').textContent = formatCurrency(buyTotal);
             document.getElementById('totalSell').textContent = formatCurrency(sellTotal);
             document.getElementById('dailyExpenditure').textContent = formatCurrency(expenseTotal);
             
+            // Update buy time analysis
+            document.getElementById('lastDateBuy').textContent = formatCurrency(buyTimeData.lastDateTotal);
+            document.getElementById('lastWeekBuy').textContent = formatCurrency(buyTimeData.lastWeekTotal);
+            document.getElementById('lastMonthBuy').textContent = formatCurrency(buyTimeData.lastMonthTotal);
+            document.getElementById('lastDateBadge').textContent = `Date: ${buyTimeData.lastDate}`;
+            
+            // Update sell time analysis
+            document.getElementById('lastDateSell').textContent = formatCurrency(sellTimeData.lastDateTotal);
+            document.getElementById('lastWeekSell').textContent = formatCurrency(sellTimeData.lastWeekTotal);
+            document.getElementById('lastMonthSell').textContent = formatCurrency(sellTimeData.lastMonthTotal);
+            document.getElementById('lastDateSellBadge').textContent = `Date: ${sellTimeData.lastDate}`;
+            
+            // Update expenditure time analysis
+            document.getElementById('lastDateExpense').textContent = formatCurrency(expenseTimeData.lastDateTotal);
+            document.getElementById('lastWeekExpense').textContent = formatCurrency(expenseTimeData.lastWeekTotal);
+            document.getElementById('lastMonthExpense').textContent = formatCurrency(expenseTimeData.lastMonthTotal);
+            document.getElementById('lastDateExpenseBadge').textContent = `Date: ${expenseTimeData.lastDate}`;
+            
             // Update summary section
-            document.getElementById('summaryBuy').textContent = formatCurrency(buyTotal);
-            document.getElementById('summarySell').textContent = formatCurrency(sellTotal);
-            document.getElementById('summaryExpense').textContent = formatCurrency(expenseTotal);
+            document.getElementById('buyRecordCount').textContent = dashboardData.buy.length;
+            document.getElementById('sellRecordCount').textContent = dashboardData.sell.length;
+            document.getElementById('expenseRecordCount').textContent = dashboardData.expense.length;
+            
+            document.getElementById('buyLastDate').textContent = buyTimeData.lastDate;
+            document.getElementById('sellLastDate').textContent = sellTimeData.lastDate;
+            document.getElementById('expenseLastDate').textContent = expenseTimeData.lastDate;
             
             // Update last updated time
             const now = new Date();
@@ -390,26 +761,18 @@
                 ]);
                 
                 // Parse CSV data
-                const buyParsed = parseCSV(buyData);
-                const sellParsed = parseCSV(sellData);
-                const expenseParsed = parseCSV(expenseData);
-                
-                // Calculate totals
-                const buyTotal = calculateSum(buyParsed, SHEETS_CONFIG.buy.column);
-                const sellTotal = calculateSum(sellParsed, SHEETS_CONFIG.sell.column);
-                const expenseTotal = calculateSum(expenseParsed, SHEETS_CONFIG.expense.column);
+                dashboardData.buy = parseCSV(buyData);
+                dashboardData.sell = parseCSV(sellData);
+                dashboardData.expense = parseCSV(expenseData);
                 
                 console.log('Data loaded successfully:', {
-                    buyTotal,
-                    sellTotal,
-                    expenseTotal,
-                    buyRecords: buyParsed.length,
-                    sellRecords: sellParsed.length,
-                    expenseRecords: expenseParsed.length
+                    buyRecords: dashboardData.buy.length,
+                    sellRecords: dashboardData.sell.length,
+                    expenseRecords: dashboardData.expense.length
                 });
                 
                 // Update dashboard
-                updateDashboard(buyTotal, sellTotal, expenseTotal);
+                updateDashboard();
                 
                 // Hide loading, show dashboard
                 loadingElement.style.display = 'none';
